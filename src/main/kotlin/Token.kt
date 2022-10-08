@@ -9,7 +9,6 @@ enum class Token {
     DIVIDE,
     KEYWORD,
     INVALID,
-    QUOTE,
     SEMICOLON,
     LEFT_PARENTHESIS,
     RIGHT_PARENTHESIS,

@@ -22,7 +22,6 @@ class LexicalAnalyzer {
         "-" to Token.MINUS,
         "*" to Token.TIMES,
         "/" to Token.DIVIDE,
-        "'" to Token.QUOTE,
         "." to Token.DOT,
         "," to Token.COMMA,
         "=" to Token.EQUAL,
@@ -42,7 +41,7 @@ class LexicalAnalyzer {
     )
 
     fun analyze(){
-        val file = File("src/main/source.txt")
+        val file = File("src/main/resources/source.txt")
         val map = mutableMapOf<Int, String>()
         var i = 1
         file.forEachLine { line ->
@@ -52,7 +51,13 @@ class LexicalAnalyzer {
             i++
         }
 
-        analyzeCode(map)
+        val lexemes = analyzeCode(map)
+        val tokensFileContent = buildString {
+            lexemes.forEach { lexeme ->
+                append("< ${lexeme.token.name}, ${lexeme.value}>\n")
+            }
+        }
+        File("src/main/resources/tokens.txt").writeText(tokensFileContent)
     }
 
     private fun analyzeCode(lines: Map<Int, String>): List<Lexeme> {
