@@ -34,7 +34,7 @@ class LexicalStateMachine {
             Q0 -> {
                 when (entry) {
                     in del -> Q0
-                    in 'A'..'Z', in 'a'..'z' -> {
+                    '_', in 'A'..'Z', in 'a'..'z' -> {
                         stringValue += entry
                         Q1
                     }
@@ -59,7 +59,7 @@ class LexicalStateMachine {
             }
             Q1 -> {
                 when(entry){
-                    in 'A'..'Z', in 'a'..'z', in '0'..'9' -> {
+                    '_', in 'A'..'Z', in 'a'..'z', in '0'..'9' -> {
                         stringValue += entry
                         Q1
                     }
@@ -106,6 +106,7 @@ class LexicalStateMachine {
             Q6 -> {
                 when(entry){
                     '|' -> Q16
+                    '=' -> Q24
                     else -> StateError(ParsingError.BAD_OPERATOR_FORMATTING)
                 }
             }
@@ -134,7 +135,6 @@ class LexicalStateMachine {
         }
         return currentState
     }
-
 }
 
 sealed class State
@@ -161,6 +161,8 @@ class Q17(token: StringToken): FinalState(token, true)
 object Q18: FinalState(GenericToken(TokenCode.DIVIDE_EQUAL),true)
 object Q19: State()
 object Q23: FinalState(GenericToken(TokenCode.DIVISION),false)
+object Q24: FinalState(GenericToken(TokenCode.OR_EQUAL),false)
+
 
 
 

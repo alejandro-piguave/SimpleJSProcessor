@@ -64,4 +64,5 @@ val codesMap: Map<String, TokenCode> = mapOf(
     "!=" to TokenCode.NOT_EQUAL,
     "&&" to TokenCode.LOGICAL_AND,
     "||" to TokenCode.LOGICAL_OR,
+    "|=" to TokenCode.OR_EQUAL
 )

@@ -58,4 +58,5 @@ enum class TokenCode(val code: Int){
     NOT_EQUAL(416),
     LOGICAL_AND(417),
     LOGICAL_OR(418),
+    OR_EQUAL(419)
 }
