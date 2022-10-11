@@ -113,7 +113,7 @@ class SymbolsTableManager {
         append("+ tipo: '${tableEntry.entryType.nombre}'\n")
         if (tableEntry is FunctionEntry) {
             append("+ numParam: ${tableEntry.parameterCount}\n")
-            append("+ tipoDev: ${tableEntry.returnType}\n")
+            append("+ TipoRetorno: '${tableEntry.returnType.nombre}'\n")
             tableEntry.parameterTypes.forEachIndexed {i , e ->
                 append("\t+ TipoParam$i: '${e.nombre}'\n")
             }
@@ -151,5 +151,5 @@ object BooleanEntry: TableEntry(EntryType.BOOLEAN)
 class FunctionEntry(var parameterCount: Int, val parameterTypes: List<EntryType>, val returnType: EntryType): TableEntry(EntryType.FUNCTION)
 
 enum class EntryType(val nombre: String){
-    STRING("string"), INTEGER("entero"), BOOLEAN("logico"), FUNCTION("funcion"), VOID("void");
+    STRING("string"), INTEGER("entero"), BOOLEAN("logico"), FUNCTION("funcion"), VOID("-");
 }

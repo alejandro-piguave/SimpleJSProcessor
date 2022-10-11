@@ -3,7 +3,7 @@ sealed class Token (val code: TokenCode, private val attribute: String){
 
 }
 
-class IdentifierToken(val name: String): Token(TokenCode.IDENTIFIER, name)
+class IdentifierToken(val name: String): Token(TokenCode.IDENTIFIER, "23")
 class StringToken(val value: String): Token(TokenCode.STRING, "\"$value\"")
 class IntegerToken(val value: Int): Token(TokenCode.INTEGER, "$value")
 
