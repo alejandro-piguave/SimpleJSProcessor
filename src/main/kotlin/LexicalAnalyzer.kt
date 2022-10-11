@@ -1,81 +1,60 @@
+import statemachines.FinalState
+import statemachines.LexicalStateMachine
+import statemachines.StateError
 import java.io.File
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.Locale
 
 class LexicalAnalyzer {
-    private val keywordsAndOperatorsMap: Map<String, Token> = mapOf(
-        "for" to Token.KEYWORD,
-        "while" to Token.KEYWORD,
-        "do" to Token.KEYWORD,
-        "if" to Token.KEYWORD,
-        "else" to  Token.KEYWORD,
-        "print" to Token.KEYWORD,
-        "input" to Token.KEYWORD,
-        "switch" to Token.KEYWORD,
-        "case" to Token.KEYWORD,
-        "default" to Token.KEYWORD,
-        "null" to Token.KEYWORD,
-        "function" to Token.KEYWORD,
-        "let" to Token.KEYWORD,
-        "+" to Token.PLUS,
-        "-" to Token.MINUS,
-        "*" to Token.TIMES,
-        "/" to Token.DIVIDE,
-        "." to Token.DOT,
-        "," to Token.COMMA,
-        "=" to Token.EQUAL,
-        ";" to Token.SEMICOLON,
-        "(" to Token.LEFT_PARENTHESIS,
-        ")" to Token.RIGHT_PARENTHESIS,
-        ">=" to Token.GREATER_OR_EQUALS,
-        "<=" to Token.LOWER_OR_EQUALS,
-        "==" to Token.EQUALS,
-        ">" to Token.GREATER_THAN,
-        "<" to Token.LOWER_THAN,
-        "!=" to Token.NOT_EQUALS,
-        "{" to Token.LEFT_BRACE,
-        "}" to Token.RIGHT_BRACE,
-        "&&" to Token.LOGICAL_AND,
-        "||" to Token.LOGICAL_OR
-    )
-
     fun analyze(){
         val file = File("src/main/resources/source.txt")
-        val map = mutableMapOf<Int, String>()
-        var i = 1
-        file.forEachLine { line ->
-            if(!line.trim().startsWith("//")){
-                map[i] = line
-            }
-            i++
-        }
 
-        val lexemes = analyzeCode(map)
-        val tokensFileContent = buildString {
-            lexemes.forEach { lexeme ->
-                append("< ${lexeme.token.name}, ${lexeme.value}>\n")
+        val text = buildString {
+            file.forEachLine { line ->
+                append(line+"\n")
             }
         }
-        File("src/main/resources/tokens.txt").writeText(tokensFileContent)
-    }
 
-    private fun analyzeCode(lines: Map<Int, String>): List<Lexeme> {
-        val lexemes: MutableList<Lexeme> = ArrayList()
-        lines.forEach { (nLine: Int, line: String) ->
-            val lexLine = analyzeLine(line.trim())
-            lexLine.forEach { (value: String, token: Token) -> lexemes.add(Lexeme(token, value, nLine)) }
-        }
-        return lexemes
-    }
+        val stateMachine = LexicalStateMachine()
+        val tableManager = SymbolsTableManager()
+        val errors: MutableList<ErrorReport> = mutableListOf()
+        val tokens: MutableList<Token> = mutableListOf()
+        var i = 0
+        var lineCount = 1
+        while(i < text.length){
+            val char = text[i]
+            when(val result = stateMachine.executeTransition(char)){
+                is StateError -> {
+                    errors.add(ErrorReport(result.error, lineCount))
+                    stateMachine.reset()
+                    i++
+                }
+                is FinalState -> {
+                    tableManager.updateTable(result.token)
+                    tokens.add(result.token)
+                    if (result.nextChar) i++
+                    stateMachine.reset()
+                }
+                else -> i++
+            }
 
-    private fun analyzeLine(line: String): Map<String, Token> {
-        val lineTokens: MutableMap<String, Token> = HashMap()
-        val automaton = Automaton()
-        for (str in line.split(" ".toRegex()).toTypedArray()) {
-            val lowerCaseStr = str.lowercase(Locale.getDefault())
-            lineTokens[str] = keywordsAndOperatorsMap[lowerCaseStr] ?: automaton.evaluate(str)
+            if( i < text.length && text[i] == '\n') lineCount++
         }
-        return lineTokens
+
+        if(errors.isNotEmpty()){
+            val errorsFileContent = buildString {
+                errors.forEach { error ->
+                    append("Error with code ${error.parsingError.code} in line ${error.line}: ${error.parsingError.message} \n")
+                }
+            }
+            File("src/main/resources/errors.txt").writeText(errorsFileContent)
+        } else {
+            val tokensFileContent = buildString {
+                tokens.forEach { token ->
+                    append("$token\n")
+                }
+            }
+            File("src/main/resources/tokens.txt").writeText(tokensFileContent)
+
+            tableManager.saveSymbolsTable()
+        }
     }
 }
