@@ -29,6 +29,7 @@ class LexicalStateMachine {
         integerValue = 0
         currentState = Q0
     }
+
     fun executeTransition(entry: Char): State {
         currentState = when (currentState) {
             Q0 -> {
@@ -161,7 +162,7 @@ class Q17(token: StringToken): FinalState(token, true)
 object Q18: FinalState(GenericToken(TokenCode.DIVIDE_EQUAL),true)
 object Q19: State()
 object Q23: FinalState(GenericToken(TokenCode.DIVISION),false)
-object Q24: FinalState(GenericToken(TokenCode.OR_EQUAL),false)
+object Q24: FinalState(GenericToken(TokenCode.OR_EQUAL),true)
 
 
 
