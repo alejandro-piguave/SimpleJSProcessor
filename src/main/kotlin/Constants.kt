@@ -1,11 +1,8 @@
 val del: List<Char> = listOf(' ', '\n', '\t')
-val singleCharSymbols: List<Char> = listOf(';', '(', ')', '{', '}', ',')
+val singleCharSymbols: List<Char> = listOf(';', '(', ')', '{', '}', ',', '$')
 val operators: List<Char> = listOf('+', '-', '*',  '=', '>', '<', '!', '%')
 val keywords: List<String> = listOf(
-    "for",
     "while",
-    "if",
-    "else",
     "print",
     "input",
     "null",
@@ -21,10 +18,7 @@ val keywords: List<String> = listOf(
 
 val codesMap: Map<String, TokenCode> = mapOf(
     //Reserved words
-    "for" to TokenCode.FOR,
     "while" to TokenCode.WHILE,
-    "if" to TokenCode.IF,
-    "else" to TokenCode.ELSE,
     "print" to TokenCode.PRINT,
     "input" to TokenCode.INPUT,
     "null" to TokenCode.NULL,
@@ -64,5 +58,7 @@ val codesMap: Map<String, TokenCode> = mapOf(
     "!=" to TokenCode.NOT_EQUAL,
     "&&" to TokenCode.LOGICAL_AND,
     "||" to TokenCode.LOGICAL_OR,
-    "|=" to TokenCode.OR_EQUAL
+    "|=" to TokenCode.OR_EQUAL,
+    //EOF
+    "$" to TokenCode.EOF
 )

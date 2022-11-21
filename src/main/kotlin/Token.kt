@@ -1,6 +1,5 @@
 sealed class Token (val code: TokenCode, private val attribute: String){
     override fun toString(): String = "<${code.code}, $attribute>"
-
 }
 
 class IdentifierToken(val name: String): Token(TokenCode.IDENTIFIER, "23")
@@ -15,10 +14,7 @@ enum class TokenCode(val code: Int){
     STRING(101),
     INTEGER(102),
     //Reserved words
-    FOR(200),
     WHILE( 201),
-    IF(203),
-    ELSE  (204),
     PRINT(  205),
     INPUT (206),
     NULL( 210),
@@ -58,5 +54,7 @@ enum class TokenCode(val code: Int){
     NOT_EQUAL(416),
     LOGICAL_AND(417),
     LOGICAL_OR(418),
-    OR_EQUAL(419)
+    OR_EQUAL(419),
+    //EOF
+    EOF(500)
 }
