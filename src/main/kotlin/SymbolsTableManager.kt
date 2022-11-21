@@ -2,9 +2,9 @@ import statemachines.*
 import java.io.File
 
 class SymbolsTableManager {
-    private val globalTable: LinkedHashMap<String, TableEntry> = LinkedHashMap()
-    private val localTables: MutableList<LinkedHashMap<String, TableEntry>> = mutableListOf()
-    private var currentLocalTable: LinkedHashMap<String, TableEntry> = LinkedHashMap()
+    private val globalTable: MutableList<TableEntry> = mutableListOf()
+    private val localTables: MutableList<List<TableEntry>> = mutableListOf()
+    private var currentLocalTable: MutableList<TableEntry> = mutableListOf()
 
     private val bracketMachine: FunctionBracketMachine = FunctionBracketMachine()
     private val letIdentifiersMachine: LetIdentifiersMachine = LetIdentifiersMachine()
@@ -29,8 +29,9 @@ class SymbolsTableManager {
             SymbolsTableManagerState.ANALYZING_LET -> {
                 val result = letIdentifiersMachine.updateState(token)
                 if(result is AfterDeclaringLetType){
-                    result.identifiers.forEach{ identifier ->
-                        globalTable[identifier] = TableEntry.fromType(result.type)!!
+                    result.tokens.forEach{ resultToken ->
+                        globalTable.add(VariableEntry(resultToken.name, result.type))
+                        resultToken.tablePosition = globalTable.lastIndex
                     }
                     letIdentifiersMachine.reset()
                     SymbolsTableManagerState.INITIAL
@@ -39,14 +40,17 @@ class SymbolsTableManager {
             SymbolsTableManagerState.ANALYZING_FUNCTION -> {
                 val result = functionDeclarationMachine.updateState(token)
                 if(result is AfterDeclaringFunctionLeftBracket){
-                    globalTable[result.function.name] =
-                        FunctionEntry(
-                            result.function.parameters.size,
-                            result.function.parameters.map { it.type },
-                            result.function.returnType
-                        )
+                    globalTable.add(FunctionEntry(
+                        result.function.token.name,
+                        result.function.parameters.size,
+                        result.function.parameters.map { it.type },
+                        result.function.returnType
+                    ))
+                    result.function.token.tablePosition = globalTable.lastIndex
+
                     result.function.parameters.forEach {
-                        currentLocalTable[it.name] = TableEntry.fromType(it.type)!!
+                        currentLocalTable.add(VariableEntry(it.token.name, it.type))
+                        it.token.tablePosition = currentLocalTable.lastIndex
                     }
                     functionDeclarationMachine.reset()
                     SymbolsTableManagerState.INSIDE_FUNCTION
@@ -77,8 +81,9 @@ class SymbolsTableManager {
                 } else {
                     val result = letIdentifiersMachine.updateState(token)
                     if(result is AfterDeclaringLetType){
-                        result.identifiers.forEach{ identifier ->
-                            currentLocalTable[identifier] = TableEntry.fromType(result.type)!!
+                        result.tokens.forEach{ resultToken ->
+                            currentLocalTable.add(VariableEntry(resultToken.name, result.type))
+                            resultToken.tablePosition = currentLocalTable.lastIndex
                         }
                         letIdentifiersMachine.reset()
                         SymbolsTableManagerState.INITIAL
@@ -88,18 +93,18 @@ class SymbolsTableManager {
         }
     }
 
-    fun saveSymbolsTable(){
+    fun save(){
         val text = buildString {
             append("#0:\n")
-            globalTable.forEach { (t, u) ->
-                append(t,u)
+            globalTable.forEach { entry ->
+                appendEntry(entry)
             }
             append("\n")
             var tableCount = 1
             localTables.forEach { localTable ->
                 append("#$tableCount:\n")
-                localTable.forEach { (t, u) ->
-                    append(t,u)
+                localTable.forEach { entry ->
+                    appendEntry(entry)
                 }
                 tableCount++
                 append("\n")
@@ -108,8 +113,8 @@ class SymbolsTableManager {
         File("src/main/resources/symbols_table.txt").writeText(text)
     }
 
-    private fun StringBuilder.append(name: String, tableEntry: TableEntry){
-        append("* '$name'\n")
+    private fun StringBuilder.appendEntry(tableEntry: TableEntry){
+        append("* '${tableEntry.key}'\n")
         append("+ tipo: '${tableEntry.entryType.nombre}'\n")
         if (tableEntry is FunctionEntry) {
             append("+ numParam: ${tableEntry.parameterCount}\n")
@@ -122,7 +127,7 @@ class SymbolsTableManager {
 
     private fun destroyCurrentLocalTable(){
         localTables.add(currentLocalTable)
-        currentLocalTable = LinkedHashMap()
+        currentLocalTable = mutableListOf()
     }
 }
 
@@ -131,25 +136,10 @@ enum class SymbolsTableManagerState{
 }
 
 
-sealed class TableEntry(val entryType: EntryType){
-    companion object{
-        fun fromType(entryType: EntryType): TableEntry?{
-            return when(entryType){
-                EntryType.INTEGER -> IntegerEntry
-                EntryType.STRING -> StringEntry
-                EntryType.BOOLEAN -> BooleanEntry
-                else -> null
-            }
-        }
-    }
-}
-
-object StringEntry: TableEntry(EntryType.STRING)
-object IntegerEntry: TableEntry(EntryType.INTEGER)
-object BooleanEntry: TableEntry(EntryType.BOOLEAN)
-
-class FunctionEntry(var parameterCount: Int, val parameterTypes: List<EntryType>, val returnType: EntryType): TableEntry(EntryType.FUNCTION)
+sealed class TableEntry(val key: String, val entryType: EntryType)
+class VariableEntry(key: String, entryType: EntryType): TableEntry(key, entryType)
+class FunctionEntry(key: String, var parameterCount: Int, val parameterTypes: List<EntryType>, val returnType: EntryType): TableEntry(key, EntryType.FUNCTION)
 
 enum class EntryType(val nombre: String){
-    STRING("string"), INTEGER("entero"), BOOLEAN("logico"), FUNCTION("funcion"), VOID("-");
+    STRING("cadena"), INTEGER("entero"), BOOLEAN("logico"), FUNCTION("funcion"), VOID("-");
 }

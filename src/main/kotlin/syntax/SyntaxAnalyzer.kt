@@ -2,13 +2,40 @@ package syntax
 
 import lexicalanalyzer.LexicalAnalyzer
 import SymbolsTableManager
+import Token
 import TokenCode
+import java.io.File
 
 class SyntaxAnalyzer {
     private lateinit var nextTokenCode: TokenCode
     private val symbolsTableManager = SymbolsTableManager()
-    private val lexicalAnalyzer = LexicalAnalyzer(symbolsTableManager)
-    val parse: MutableList<Int> = mutableListOf()
+    private val tokens: MutableList<Token> = mutableListOf()
+    private val lexicalAnalyzer = LexicalAnalyzer(symbolsTableManager, tokens)
+    private val parse: MutableList<Int> = mutableListOf()
+
+    fun saveParse(){
+        val parseContent = buildString {
+            append("Descendente ")
+            parse.forEach {
+                append("$it ")
+            }
+        }
+
+        File("src/main/resources/parse.txt").writeText(parseContent)
+    }
+
+    fun saveTokens(){
+        val tokensFileContent = buildString {
+            tokens.forEach { token ->
+                append("$token\n")
+            }
+        }
+        File("src/main/resources/tokens.txt").writeText(tokensFileContent)
+    }
+
+    fun saveSymbols(){
+        symbolsTableManager.save()
+    }
 
     fun analyze() {
         generateNextToken()

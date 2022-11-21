@@ -6,12 +6,12 @@ import Token
 
 class FunctionStateMachine {
     private var currentState: FunctionMachineState = InitialState
-    private var currentFunctionName: String = ""
+    private var currentFunctionToken: IdentifierToken? = null
     private var returnType = EntryType.VOID
     private val parameters: MutableList<FunctionParameter> = mutableListOf()
 
     fun reset(){
-        currentFunctionName = ""
+        currentFunctionToken = null
         currentState = InitialState
         parameters.clear()
     }
@@ -28,7 +28,7 @@ class FunctionStateMachine {
             is DeclaringFunctionIdentifier -> {
                 when(token){
                     is IdentifierToken -> {
-                        currentFunctionName = token.name
+                        currentFunctionToken = token
                         DeclaringFunctionReturnType
                     }
                     else -> DeclarationError
@@ -69,19 +69,19 @@ class FunctionStateMachine {
             }
             is DeclaringStringFunctionParameter -> {
                 if(token is IdentifierToken){
-                    parameters.add(FunctionParameter(token.name, EntryType.STRING))
+                    parameters.add(FunctionParameter(token, EntryType.STRING))
                     AfterDeclaringParameterIdentifier
                 } else DeclarationError
             }
             is DeclaringIntegerFunctionParameter -> {
                 if(token is IdentifierToken){
-                    parameters.add(FunctionParameter(token.name, EntryType.INTEGER))
+                    parameters.add(FunctionParameter(token, EntryType.INTEGER))
                     AfterDeclaringParameterIdentifier
                 } else DeclarationError
             }
             is DeclaringBooleanFunctionParameter -> {
                 if(token is IdentifierToken){
-                    parameters.add(FunctionParameter(token.name, EntryType.BOOLEAN))
+                    parameters.add(FunctionParameter(token, EntryType.BOOLEAN))
                     AfterDeclaringParameterIdentifier
                 } else DeclarationError
             }
@@ -94,7 +94,7 @@ class FunctionStateMachine {
             }
             is DeclaringFunctionLeftBracket -> {
                 when(token.code){
-                    TokenCode.LEFT_BRACKET -> AfterDeclaringFunctionLeftBracket(Function(currentFunctionName, parameters, returnType))
+                    TokenCode.LEFT_BRACKET -> AfterDeclaringFunctionLeftBracket(Function(currentFunctionToken!!, parameters, returnType))
                     else -> DeclarationError
                 }
             }
@@ -105,8 +105,8 @@ class FunctionStateMachine {
     }
 }
 
-data class FunctionParameter(val name: String, val type: EntryType)
-data class Function(val name: String, val parameters: List<FunctionParameter>, val returnType: EntryType)
+data class FunctionParameter(val token: IdentifierToken, val type: EntryType)
+data class Function(val token: IdentifierToken, val parameters: List<FunctionParameter>, val returnType: EntryType)
 
 sealed class FunctionMachineState
 

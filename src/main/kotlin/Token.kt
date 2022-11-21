@@ -1,13 +1,21 @@
-sealed class Token (val code: TokenCode, private val attribute: String){
-    override fun toString(): String = "<${code.code}, $attribute>"
+sealed class Token (val code: TokenCode){
+    abstract fun getAttribute(): String
+    override fun toString(): String = "<${code.code}, ${getAttribute()}>"
 }
 
-class IdentifierToken(val name: String): Token(TokenCode.IDENTIFIER, "23")
-class StringToken(val value: String): Token(TokenCode.STRING, "\"$value\"")
-class IntegerToken(val value: Int): Token(TokenCode.INTEGER, "$value")
+class IdentifierToken(val name: String, var tablePosition: Int = -1): Token(TokenCode.IDENTIFIER){
+    override fun getAttribute(): String = "$tablePosition"
+}
+class StringToken(val value: String): Token(TokenCode.STRING, ){
+    override fun getAttribute(): String = "\"$value\""
+}
+class IntegerToken(val value: Int): Token(TokenCode.INTEGER){
+    override fun getAttribute(): String = "$value"
+}
 
-class GenericToken(id: TokenCode): Token(id, "")
-
+class GenericToken(id: TokenCode): Token(id){
+    override fun getAttribute(): String = ""
+}
 
 enum class TokenCode(val code: Int){
     IDENTIFIER(100),

@@ -8,7 +8,7 @@ import TokenCode
 class LetIdentifiersMachine {
 
     private var currentState: LetIdentifiersMachineState = LetInitialState
-    private val currentLetIdentifiers: MutableList<String> = mutableListOf()
+    private val currentLetIdentifiers: MutableList<IdentifierToken> = mutableListOf()
 
     fun reset(){
         currentState = LetInitialState
@@ -26,7 +26,7 @@ class LetIdentifiersMachine {
             is DeclaringLetIdentifier -> {
                 when(token){
                     is IdentifierToken -> {
-                        currentLetIdentifiers.add(token.name)
+                        currentLetIdentifiers.add(token)
                         AfterDeclaringFirstLetIdentifier
                     }
                     else -> LetDeclarationError
@@ -52,4 +52,4 @@ object LetDeclarationError: LetIdentifiersMachineState()
 object LetInitialState : LetIdentifiersMachineState()
 object DeclaringLetIdentifier : LetIdentifiersMachineState()
 object AfterDeclaringFirstLetIdentifier : LetIdentifiersMachineState()
-class AfterDeclaringLetType(val type: EntryType, val identifiers: List<String>): LetIdentifiersMachineState()
+class AfterDeclaringLetType(val type: EntryType, val tokens: List<IdentifierToken>): LetIdentifiersMachineState()

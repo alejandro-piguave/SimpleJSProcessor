@@ -15,14 +15,9 @@ fun main() {
         return
     }
 
-    val parseContent = buildString {
-        append("Descendente ")
-        syntaxAnalyzer.parse.forEach {
-            append("$it ")
-        }
-    }
-
-    File("src/main/resources/parse.txt").writeText(parseContent)
+    syntaxAnalyzer.saveParse()
+    syntaxAnalyzer.saveTokens()
+    syntaxAnalyzer.saveSymbols()
 }
 
 fun writeError(message: String?){

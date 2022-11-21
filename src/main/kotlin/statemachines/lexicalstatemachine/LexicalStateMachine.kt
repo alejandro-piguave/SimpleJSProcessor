@@ -15,7 +15,6 @@ import singleCharSymbols
 class LexicalStateMachine {
 
     companion object{
-        private const val INTEGER_LOWER_BOUND = -32768
         private const val INTEGER_UPPER_BOUND = 32767
         private const val STRING_SIZE_LIMIT = 64
     }
@@ -76,7 +75,7 @@ class LexicalStateMachine {
                 when (entry) {
                     in '0'..'9' -> {
                         integerValue = integerValue * 10 + entry.digitToInt()
-                        if(integerValue in INTEGER_LOWER_BOUND..INTEGER_UPPER_BOUND)
+                        if(integerValue in 0..INTEGER_UPPER_BOUND)
                             State.Q2
                         else throw IntegerOverflowException
                     }
@@ -132,6 +131,7 @@ class LexicalStateMachine {
                 }
             }
             is State.FinalState -> {currentState}
+            else -> {currentState}
         }
         return currentState
     }
