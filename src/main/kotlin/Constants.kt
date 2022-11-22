@@ -3,6 +3,7 @@ val singleCharSymbols: List<Char> = listOf(';', '(', ')', '{', '}', ',', '$')
 val operators: List<Char> = listOf('+', '-', '*',  '=', '>', '<', '!', '%')
 val keywords: List<String> = listOf(
     "while",
+    "if",
     "print",
     "input",
     "null",
@@ -20,6 +21,7 @@ val codesMap: Map<String, TokenCode> = mapOf(
     //Reserved words
     "while" to TokenCode.WHILE,
     "print" to TokenCode.PRINT,
+    "if" to TokenCode.IF,
     "input" to TokenCode.INPUT,
     "null" to TokenCode.NULL,
     "function" to TokenCode.FUNCTION,

@@ -23,6 +23,7 @@ enum class TokenCode(val code: Int){
     INTEGER(102),
     //Reserved words
     WHILE( 201),
+    IF(203),
     PRINT(  205),
     INPUT (206),
     NULL( 210),
