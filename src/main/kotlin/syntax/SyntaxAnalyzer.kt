@@ -84,9 +84,9 @@ class SyntaxAnalyzer {
                 T()
                 compare(TokenCode.SEMICOLON)
             }
-            in FIRST_S -> {
+            in FIRST_G -> {
                 parse.add(5)
-                S()
+                G()
             }
             TokenCode.WHILE -> {
                 parse.add(6)
@@ -104,7 +104,8 @@ class SyntaxAnalyzer {
                 compare(TokenCode.LEFT_PARENTHESIS)
                 E()
                 compare(TokenCode.RIGHT_PARENTHESIS)
-                S()
+                G()
+                compare(TokenCode.SEMICOLON)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, FIRST_S + TokenCode.WHILE)
         }
@@ -136,6 +137,12 @@ class SyntaxAnalyzer {
                 Z()
                 compare(TokenCode.SEMICOLON)
             }
+            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, listOf(TokenCode.IDENTIFIER, TokenCode.PRINT,TokenCode.INPUT,TokenCode.RETURN))
+        }
+    }
+
+    private fun SI(){
+        when (nextTokenCode) {
             TokenCode.PRINT -> {
                 parse.add(12)
                 compare(TokenCode.PRINT)
@@ -157,39 +164,52 @@ class SyntaxAnalyzer {
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, listOf(TokenCode.IDENTIFIER, TokenCode.PRINT,TokenCode.INPUT,TokenCode.RETURN))
         }
     }
+    private fun G(){
+        when (nextTokenCode) {
+            in FIRST_S -> {
+                parse.add(15)
+                S()
+            }
+            in FIRST_SI -> {
+                parse.add(16)
+                SI()
+            }
+            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, listOf(TokenCode.IDENTIFIER, TokenCode.PRINT,TokenCode.INPUT,TokenCode.RETURN))
+        }
+    }
 
     private fun X() {
-        parse.add(15)
+        parse.add(17)
         E()
     }
 
     private fun Z() {
         when (nextTokenCode) {
             TokenCode.ASSIGNMENT_EQUAL -> {
-                parse.add(16)
+                parse.add(18)
                 compare(TokenCode.ASSIGNMENT_EQUAL)
                 E()
             }
             TokenCode.LEFT_PARENTHESIS -> {
-                parse.add(17)
+                parse.add(19)
                 compare(TokenCode.LEFT_PARENTHESIS)
                 L()
                 compare(TokenCode.RIGHT_PARENTHESIS)
             }
             TokenCode.OR_EQUAL -> {
-                parse.add(18)
+                parse.add(20)
                 compare(TokenCode.OR_EQUAL)
                 E()
             }
             in FOLLOW_Z -> {
-                parse.add(19)
+                parse.add(21)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, listOf(TokenCode.ASSIGNMENT_EQUAL, TokenCode.LEFT_PARENTHESIS, TokenCode.OR_EQUAL))
         }
     }
 
     private fun L() {
-        parse.add(20)
+        parse.add(22)
         E()
         Q()
     }
@@ -197,13 +217,13 @@ class SyntaxAnalyzer {
     private fun Q() {
         when (nextTokenCode) {
             TokenCode.COMMA -> {
-                parse.add(21)
+                parse.add(23)
                 compare(TokenCode.COMMA)
                 E()
                 Q()
             }
             in FOLLOW_Q -> {
-                parse.add(22)
+                parse.add(24)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, FOLLOW_Q + TokenCode.COMMA)
         }
@@ -212,12 +232,12 @@ class SyntaxAnalyzer {
     private fun E() {
         when (nextTokenCode) {
             in FIRST_R -> {
-                parse.add(23)
+                parse.add(25)
                 R()
                 EI()
             }
             in FOLLOW_E -> {
-                parse.add(24)
+                parse.add(26)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, FIRST_R + FOLLOW_E)
         }
@@ -226,20 +246,20 @@ class SyntaxAnalyzer {
     private fun EI() {
         when (nextTokenCode) {
             TokenCode.LOGICAL_AND -> {
-                parse.add(25)
+                parse.add(27)
                 compare(TokenCode.LOGICAL_AND)
                 R()
                 EI()
             }
             in FOLLOW_EI -> {
-                parse.add(26)
+                parse.add(28)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, TokenCode.LOGICAL_AND)
         }
     }
 
     private fun R() {
-        parse.add(27)
+        parse.add(29)
         U()
         RI()
     }
@@ -247,20 +267,20 @@ class SyntaxAnalyzer {
     private fun RI() {
         when (nextTokenCode) {
             TokenCode.COMPARISON_EQUAL -> {
-                parse.add(28)
+                parse.add(30)
                 compare(TokenCode.COMPARISON_EQUAL)
                 U()
                 RI()
             }
             in FOLLOW_RI -> {
-                parse.add(29)
+                parse.add(31)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, FOLLOW_RI + TokenCode.COMPARISON_EQUAL)
         }
     }
 
     private fun U() {
-        parse.add(30)
+        parse.add(32)
         M()
         UI()
     }
@@ -268,20 +288,20 @@ class SyntaxAnalyzer {
     private fun UI() {
         when (nextTokenCode) {
             TokenCode.PLUS -> {
-                parse.add(31)
+                parse.add(33)
                 compare(TokenCode.PLUS)
                 M()
                 UI()
             }
             in FOLLOW_UI -> {
-                parse.add(32)
+                parse.add(34)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, FOLLOW_UI + TokenCode.PLUS)
         }
     }
 
     private fun M() {
-        parse.add(33)
+        parse.add(35)
         V()
         MI()
     }
@@ -289,13 +309,13 @@ class SyntaxAnalyzer {
     private fun MI() {
         when (nextTokenCode) {
             TokenCode.MINUS -> {
-                parse.add(34)
+                parse.add(36)
                 compare(TokenCode.MINUS)
                 V()
                 MI()
             }
             in FOLLOW_MI -> {
-                parse.add(35)
+                parse.add(37)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, FOLLOW_MI + TokenCode.MINUS)
         }
@@ -304,29 +324,29 @@ class SyntaxAnalyzer {
     private fun V() {
         when (nextTokenCode) {
             TokenCode.LEFT_PARENTHESIS -> {
-                parse.add(36)
+                parse.add(38)
                 compare(TokenCode.LEFT_PARENTHESIS)
                 E()
                 compare(TokenCode.RIGHT_PARENTHESIS)
             }
             TokenCode.INTEGER -> {
-                parse.add(37)
+                parse.add(39)
                 compare(TokenCode.INTEGER)
             }
             TokenCode.STRING -> {
-                parse.add(38)
+                parse.add(40)
                 compare(TokenCode.STRING)
             }
             in FIRST_S -> {
-                parse.add(39)
+                parse.add(41)
                 S()
             }
             TokenCode.TRUE -> {
-                parse.add(40)
+                parse.add(42)
                 compare(TokenCode.TRUE)
             }
             TokenCode.FALSE -> {
-                parse.add(40)
+                parse.add(42)
                 compare(TokenCode.FALSE)
             }
 
@@ -335,7 +355,7 @@ class SyntaxAnalyzer {
     }
 
     private fun F() {
-        parse.add(41)
+        parse.add(43)
         compare(TokenCode.FUNCTION)
         compare(TokenCode.IDENTIFIER)
         H()
@@ -350,11 +370,11 @@ class SyntaxAnalyzer {
     private fun H() {
         when (nextTokenCode) {
             in FIRST_T -> {
-                parse.add(42)
+                parse.add(44)
                 T()
             }
             in FOLLOW_H -> {
-                parse.add(43)
+                parse.add(45)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, FIRST_T + FOLLOW_H)
         }
@@ -363,13 +383,13 @@ class SyntaxAnalyzer {
     private fun A() {
         when (nextTokenCode) {
             in FIRST_T -> {
-                parse.add(44)
+                parse.add(46)
                 T()
                 compare(TokenCode.IDENTIFIER)
                 AI()
             }
             in FOLLOW_A -> {
-                parse.add(45)
+                parse.add(47)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, FIRST_T + FOLLOW_A)
         }
@@ -378,14 +398,14 @@ class SyntaxAnalyzer {
     private fun AI() {
         when (nextTokenCode) {
             TokenCode.COMMA -> {
-                parse.add(46)
+                parse.add(48)
                 compare(TokenCode.COMMA)
                 T()
                 compare(TokenCode.IDENTIFIER)
                 AI()
             }
             in FOLLOW_AI -> {
-                parse.add(47)
+                parse.add(49)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, FOLLOW_AI + TokenCode.COMMA )
         }
@@ -394,19 +414,19 @@ class SyntaxAnalyzer {
     private fun D() {
         when (nextTokenCode) {
             in FIRST_B -> {
-                parse.add(48)
+                parse.add(50)
                 B()
                 D()
             }
             in FOLLOW_D -> {
-                parse.add(49)
+                parse.add(51)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextTokenCode, FIRST_B + FOLLOW_D)
         }
     }
 
     private fun C() {
-        parse.add(50)
+        parse.add(52)
         B()
         C()
     }
@@ -441,7 +461,19 @@ class SyntaxAnalyzer {
         val FIRST_T = listOf(
             TokenCode.INTEGER_KEYWORD,
             TokenCode.STRING_KEYWORD,
-            TokenCode.BOOLEAN_KEYWORD)
+            TokenCode.BOOLEAN_KEYWORD
+        )
+        val FIRST_G = listOf(
+            TokenCode.IDENTIFIER,
+            TokenCode.PRINT,
+            TokenCode.INPUT,
+            TokenCode.RETURN
+        )
+        val FIRST_SI = listOf(
+            TokenCode.PRINT,
+            TokenCode.INPUT,
+            TokenCode.RETURN
+        )
 
         //FOLLOW
         val FOLLOW_P = listOf(TokenCode.EOF)
