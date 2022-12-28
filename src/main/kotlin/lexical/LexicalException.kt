@@ -1,6 +1,6 @@
-package lexicalanalyzer
+package lexical
 
-import statemachines.lexicalstatemachine.LexicalStateMachineException
+import lexical.statemachine.LexicalStateMachineException
 
 sealed class LexicalException(message: String?): Exception(message)
 

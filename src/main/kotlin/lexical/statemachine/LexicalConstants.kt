@@ -1,3 +1,9 @@
+package lexical.statemachine
+
+import TokenCode
+
+//Constants
+
 val del: List<Char> = listOf(' ', '\n', '\t')
 val singleCharSymbols: List<Char> = listOf(';', '(', ')', '{', '}', ',', '$')
 val operators: List<Char> = listOf('+', '-', '*',  '=', '>', '<', '!', '%')
@@ -64,3 +70,5 @@ val codesMap: Map<String, TokenCode> = mapOf(
     //EOF
     "$" to TokenCode.EOF
 )
+
+

@@ -1,12 +1,16 @@
-package lexicalanalyzer
+package lexical
 
-import SymbolsTableManager
+import GenericToken
+import IntegerToken
+import StringToken
+import SymbolsTable
 import Token
-import statemachines.lexicalstatemachine.LexicalStateMachine
-import statemachines.lexicalstatemachine.LexicalStateMachineException
+import lexical.statemachine.LexicalState
+import lexical.statemachine.LexicalStateMachine
+import lexical.statemachine.LexicalStateMachineException
 import java.io.File
 
-class LexicalAnalyzer(private val tableManager: SymbolsTableManager,
+class LexicalAnalyzer(private val tableManager: SymbolsTable,
                       private val tokens: MutableList<Token>
 ) {
     private val stateMachine = LexicalStateMachine()
@@ -40,12 +44,12 @@ class LexicalAnalyzer(private val tableManager: SymbolsTableManager,
             val char = text[currentChar]
             try {
                 val result = stateMachine.executeTransition(char)
-                if(result is LexicalStateMachine.State.FinalState){
-                    tableManager.updateTable(result.token)
-                    tokens.add(result.token)
+                if(result is LexicalState.FinalState){
+                    val token = convertToToken(result)
+                    tokens.add(token)
                     if (result.nextChar) currentChar++
                     stateMachine.reset()
-                    return result.token
+                    return token
                 } else currentChar++
 
             }catch (e: LexicalStateMachineException){
@@ -59,5 +63,15 @@ class LexicalAnalyzer(private val tableManager: SymbolsTableManager,
             }
         }
         throw NoNextTokenException
+    }
+
+
+    private fun convertToToken(result: LexicalState.FinalState): Token{
+        return when(result){
+            is LexicalState.GenericFinalState -> GenericToken(result.code)
+            is LexicalState.IdFinalState -> tableManager.getIdToken(result.name)
+            is LexicalState.IntFinalState -> IntegerToken(result.value)
+            is LexicalState.StringFinalState -> StringToken(result.value)
+        }
     }
 }

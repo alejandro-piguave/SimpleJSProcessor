@@ -1,4 +1,4 @@
-package statemachines.lexicalstatemachine
+package lexical.statemachine
 
 sealed class LexicalStateMachineException(val code: Int, message: String): Exception(message)
 

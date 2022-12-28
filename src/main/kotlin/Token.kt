@@ -3,10 +3,10 @@ sealed class Token (val code: TokenCode){
     override fun toString(): String = "<${code.code}, ${getAttribute()}>"
 }
 
-class IdentifierToken(val name: String, var tablePosition: Int = -1): Token(TokenCode.IDENTIFIER){
+class IdentifierToken(val name: String, val tablePosition: Int): Token(TokenCode.IDENTIFIER){
     override fun getAttribute(): String = "$tablePosition"
 }
-class StringToken(val value: String): Token(TokenCode.STRING, ){
+class StringToken(val value: String): Token(TokenCode.STRING){
     override fun getAttribute(): String = "\"$value\""
 }
 class IntegerToken(val value: Int): Token(TokenCode.INTEGER){

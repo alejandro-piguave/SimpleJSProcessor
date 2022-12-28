@@ -1,4 +1,5 @@
-import lexicalanalyzer.LexicalException
+import lexical.LexicalException
+import semantic.SemanticException
 import syntax.SyntaxAnalyzer
 import syntax.SyntaxException
 import java.io.File
@@ -8,11 +9,13 @@ fun main() {
     try {
         syntaxAnalyzer.analyze()
     } catch (e: LexicalException){
-        writeError(e.message)
+        writeError("LexicalException."+ e.message)
         return
     } catch(e: SyntaxException){
-        writeError(e.message)
+        writeError("SyntaxException."+ e.message)
         return
+    } catch (e: SemanticException){
+        writeError("SemanticException."+ e.message)
     }
 
     syntaxAnalyzer.saveParse()
