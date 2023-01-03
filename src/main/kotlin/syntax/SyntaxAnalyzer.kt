@@ -92,8 +92,20 @@ class SyntaxAnalyzer {
 
     private fun B() {
         when (nextToken.code) {
-            TokenCode.LET -> {
+            TokenCode.IF -> {
                 parse.add(4)
+                compare(TokenCode.IF)
+                compare(TokenCode.LEFT_PARENTHESIS)
+                val EType = E()
+                if(EType != EntryType.BOOLEAN) {
+                    throw UnexpectedTypeException(lexicalAnalyzer.fileLine, EType, EntryType.BOOLEAN)
+                }
+                compare(TokenCode.RIGHT_PARENTHESIS)
+                S()
+                compare(TokenCode.SEMICOLON)
+            }
+            TokenCode.LET -> {
+                parse.add(5)
                 compare(TokenCode.LET)
                 val tablePosition = compare(TokenCode.IDENTIFIER){
                     (nextToken as IdentifierToken).tablePosition
@@ -102,12 +114,12 @@ class SyntaxAnalyzer {
                 symbolsTable.addEntryType(tablePosition,type)
                 compare(TokenCode.SEMICOLON)
             }
-            in FIRST_G -> {
-                parse.add(5)
-                G()
+            in FIRST_S -> {
+                parse.add(6)
+                S()
             }
             TokenCode.WHILE -> {
-                parse.add(6)
+                parse.add(7)
                 compare(TokenCode.WHILE)
                 compare(TokenCode.LEFT_PARENTHESIS)
                 val EType = E()
@@ -119,65 +131,25 @@ class SyntaxAnalyzer {
                 C()
                 compare(TokenCode.RIGHT_BRACKET)
             }
-            TokenCode.IF -> {
-                parse.add(7)
-                compare(TokenCode.IF)
-                compare(TokenCode.LEFT_PARENTHESIS)
-                val EType = E()
-                if(EType != EntryType.BOOLEAN) {
-                    throw UnexpectedTypeException(lexicalAnalyzer.fileLine, EType, EntryType.BOOLEAN)
-                }
-                compare(TokenCode.RIGHT_PARENTHESIS)
-                G()
-                compare(TokenCode.SEMICOLON)
-            }
+
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FIRST_S + TokenCode.WHILE)
         }
     }
 
-    private fun T(): EntryType {
-        return when (nextToken.code) {
-            TokenCode.INTEGER_KEYWORD -> {
-                parse.add(8)
-                compare(TokenCode.INTEGER_KEYWORD)
-                EntryType.INTEGER
-            }
-            TokenCode.BOOLEAN_KEYWORD -> {
-                parse.add(9)
-                compare(TokenCode.BOOLEAN_KEYWORD)
-                EntryType.BOOLEAN
-            }
-            TokenCode.STRING_KEYWORD -> {
-                parse.add(10)
-                compare(TokenCode.STRING_KEYWORD)
-                EntryType.STRING
-            }
-            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, listOf(TokenCode.INTEGER_KEYWORD, TokenCode.BOOLEAN_KEYWORD,TokenCode.STRING_KEYWORD))
-        }
-    }
-
-    private fun S(): EntryType {
+    private fun S() {
         when (nextToken.code) {
             TokenCode.IDENTIFIER -> {
-                parse.add(11)
+                parse.add(8)
                 val idToken = compare(TokenCode.IDENTIFIER){
                     (nextToken as IdentifierToken)
                 }
                 val entryType = symbolsTable.getEntryType(idToken.tablePosition) ?: throw UnexpectedIdentifierException(lexicalAnalyzer.fileLine, idToken.name)
 
-                Z(idToken.tablePosition, entryType)
+                I(idToken.tablePosition, entryType)
                 compare(TokenCode.SEMICOLON)
-
-                return entryType
             }
-            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, listOf(TokenCode.IDENTIFIER, TokenCode.PRINT,TokenCode.INPUT,TokenCode.RETURN))
-        }
-    }
-
-    private fun SI(){
-        when (nextToken.code) {
             TokenCode.PRINT -> {
-                parse.add(12)
+                parse.add(9)
                 compare(TokenCode.PRINT)
                 val EType = E()
                 if(EType != EntryType.INTEGER && EType != EntryType.STRING){
@@ -186,7 +158,7 @@ class SyntaxAnalyzer {
                 compare(TokenCode.SEMICOLON)
             }
             TokenCode.INPUT -> {
-                parse.add(13)
+                parse.add(10)
                 compare(TokenCode.INPUT)
                 val idToken = compare(TokenCode.IDENTIFIER){
                     (nextToken as IdentifierToken)
@@ -201,71 +173,49 @@ class SyntaxAnalyzer {
                 if(symbolsTable.isCurrentTableGlobal){
                     throw UnexpectedReturnUseException(lexicalAnalyzer.fileLine)
                 }
-                parse.add(14)
+                parse.add(11)
                 compare(TokenCode.RETURN)
                 X()
                 compare(TokenCode.SEMICOLON)
             }
-            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, listOf(TokenCode.IDENTIFIER, TokenCode.PRINT,TokenCode.INPUT,TokenCode.RETURN))
-        }
-    }
-    private fun G(){
-        when (nextToken.code) {
-            in FIRST_S -> {
-                parse.add(15)
-                S()
-                compare(TokenCode.SEMICOLON)
-            }
-            in FIRST_SI -> {
-                parse.add(16)
-                SI()
-            }
-            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, listOf(TokenCode.IDENTIFIER, TokenCode.PRINT,TokenCode.INPUT,TokenCode.RETURN))
+            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, TokenCode.IDENTIFIER)
         }
     }
 
-    private fun X() {
-        parse.add(17)
-        E()
-    }
-
-    private fun Z(tablePosition: Int, entryType: EntryType) {
+    private fun I(tablePosition: Int, entryType: EntryType) {
         when (nextToken.code) {
             TokenCode.ASSIGNMENT_EQUAL -> {
-                parse.add(18)
+                parse.add(12)
                 compare(TokenCode.ASSIGNMENT_EQUAL)
                 val EType = E()
-
                 if(entryType != EType)
                     throw UnexpectedTypeException(lexicalAnalyzer.fileLine, EType, entryType)
             }
-            TokenCode.LEFT_PARENTHESIS -> {
-                if(entryType != EntryType.FUNCTION)
-                    throw UnexpectedTypeException(lexicalAnalyzer.fileLine, entryType, EntryType.FUNCTION)
-                val parameterList = symbolsTable.getEntryParameters(tablePosition)
-                parse.add(19)
-                compare(TokenCode.LEFT_PARENTHESIS)
-                L(parameterList)
-                compare(TokenCode.RIGHT_PARENTHESIS)
-            }
             TokenCode.OR_EQUAL -> {
+                parse.add(13)
                 if(entryType != EntryType.BOOLEAN)
                     throw UnexpectedTypeException(lexicalAnalyzer.fileLine, entryType, EntryType.BOOLEAN)
-                parse.add(20)
+
                 compare(TokenCode.OR_EQUAL)
                 val EType = E()
                 if(EType != EntryType.BOOLEAN)
                     throw UnexpectedTypeException(lexicalAnalyzer.fileLine, EType, EntryType.BOOLEAN)
             }
-            in FOLLOW_Z -> {
-                parse.add(21)
+            TokenCode.LEFT_PARENTHESIS -> {
+                parse.add(14)
+                if(entryType != EntryType.FUNCTION)
+                    throw UnexpectedTypeException(lexicalAnalyzer.fileLine, entryType, EntryType.FUNCTION)
+                val parameterList = symbolsTable.getEntryParameters(tablePosition)
+                compare(TokenCode.LEFT_PARENTHESIS)
+                L(parameterList)
+                compare(TokenCode.RIGHT_PARENTHESIS)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, listOf(TokenCode.ASSIGNMENT_EQUAL, TokenCode.LEFT_PARENTHESIS, TokenCode.OR_EQUAL))
         }
     }
 
     private fun L(parameterList: List<EntryType>) {
-        parse.add(22)
+        parse.add(15)
         val EType = E()
 
         if(parameterList.isEmpty() && EType != EntryType.VOID || parameterList[0] != EType){
@@ -277,7 +227,7 @@ class SyntaxAnalyzer {
     private fun Q(parameterList: List<EntryType>, index: Int) {
         when (nextToken.code) {
             TokenCode.COMMA -> {
-                parse.add(23)
+                parse.add(16)
                 compare(TokenCode.COMMA)
                 val EType = E()
 
@@ -287,45 +237,50 @@ class SyntaxAnalyzer {
                 Q(parameterList, index + 1)
             }
             in FOLLOW_Q -> {
-                parse.add(24)
+                parse.add(17)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FOLLOW_Q + TokenCode.COMMA)
         }
     }
 
-    private fun E(): EntryType {
-        return when (nextToken.code) {
-            in FIRST_R -> {
-                parse.add(25)
-                val RType = R()
-                val EIType = EI()
 
-                if(RType == EIType || EIType == EntryType.VOID){
-                    return RType
-                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, EIType, RType)
+    private fun X() {
+        when (nextToken.code) {
+            in FIRST_E -> {
+                parse.add(18)
+                E()
             }
-            in FOLLOW_E -> {
-                parse.add(26)
-                EntryType.VOID
+            in FOLLOW_X -> {
+                parse.add(19)
             }
-            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FIRST_R + FOLLOW_E)
+            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FOLLOW_Q + TokenCode.COMMA)
         }
     }
 
-    private fun EI(): EntryType {
+
+    private fun E(): EntryType {
+        parse.add(20)
+        val RType = R()
+        val RIType = RI()
+        if(RType == RIType || RIType == EntryType.VOID){
+            return RType
+        } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, RIType, RType)
+    }
+
+    private fun RI(): EntryType {
         return when (nextToken.code) {
             TokenCode.LOGICAL_AND -> {
-                parse.add(27)
+                parse.add(21)
                 compare(TokenCode.LOGICAL_AND)
                 val RType = R()
-                val EIType = EI()
+                val RIType = RI()
 
-                if(RType == EntryType.BOOLEAN && (EIType == EntryType.BOOLEAN || EIType == EntryType.VOID)){
+                if(RType == EntryType.BOOLEAN && (RIType == EntryType.BOOLEAN || RIType == EntryType.VOID)){
                     EntryType.BOOLEAN
-                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, EIType, EntryType.BOOLEAN )
+                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, RIType, EntryType.BOOLEAN )
             }
-            in FOLLOW_EI -> {
-                parse.add(28)
+            in FOLLOW_RI -> {
+                parse.add(22)
                 EntryType.VOID
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, TokenCode.LOGICAL_AND)
@@ -333,29 +288,29 @@ class SyntaxAnalyzer {
     }
 
     private fun R(): EntryType {
-        parse.add(29)
+        parse.add(23)
         val UType = U()
-        val RIType = RI()
+        val UIType = UI()
 
-        if(UType == RIType || RIType == EntryType.VOID){
+        if(UType == UIType || UIType == EntryType.VOID){
             return UType
-        } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, RIType, UType)
+        } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, UIType, UType)
     }
 
-    private fun RI(): EntryType {
+    private fun UI(): EntryType {
         return when (nextToken.code) {
             TokenCode.COMPARISON_EQUAL -> {
-                parse.add(30)
+                parse.add(24)
                 compare(TokenCode.COMPARISON_EQUAL)
                 val UType = U()
-                val RIType = RI()
+                val UIType = UI()
 
-                if(UType == EntryType.BOOLEAN && (RIType == EntryType.BOOLEAN || RIType == EntryType.VOID)){
+                if(UType == EntryType.BOOLEAN && (UIType == EntryType.BOOLEAN || UIType == EntryType.VOID)){
                     EntryType.BOOLEAN
-                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, RIType, EntryType.BOOLEAN )
+                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, UIType, EntryType.BOOLEAN )
             }
-            in FOLLOW_RI -> {
-                parse.add(31)
+            in FOLLOW_UI -> {
+                parse.add(25)
                 EntryType.VOID
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FOLLOW_RI + TokenCode.COMPARISON_EQUAL)
@@ -363,39 +318,39 @@ class SyntaxAnalyzer {
     }
 
     private fun U(): EntryType {
-        parse.add(32)
+        parse.add(26)
         val VType = V()
-        val UIType = UI()
+        val VIType = VI()
 
-        if(VType == UIType || UIType == EntryType.VOID){
+        if(VType == VIType || VIType == EntryType.VOID){
             return VType
-        } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, UIType, VType)
+        } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, VIType, VType)
     }
 
-    private fun UI(): EntryType{
+    private fun VI(): EntryType{
         return when (nextToken.code) {
             TokenCode.PLUS -> {
-                parse.add(33)
+                parse.add(27)
                 compare(TokenCode.PLUS)
                 val VType = V()
-                val UIType = UI()
+                val VIType = VI()
 
-                if(VType == EntryType.INTEGER && (UIType == EntryType.INTEGER || UIType == EntryType.VOID)){
+                if(VType == EntryType.INTEGER && (VIType == EntryType.INTEGER || VIType == EntryType.VOID)){
                     EntryType.INTEGER
-                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, UIType, EntryType.INTEGER )
+                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, VIType, EntryType.INTEGER )
             }
             TokenCode.MINUS -> {
-                parse.add(34)
+                parse.add(28)
                 compare(TokenCode.MINUS)
                 val VType = V()
-                val UIType = UI()
+                val VIType = VI()
 
-                if(VType == EntryType.INTEGER && (UIType == EntryType.INTEGER || UIType == EntryType.VOID)){
+                if(VType == EntryType.INTEGER && (VIType == EntryType.INTEGER || VIType == EntryType.VOID)){
                     EntryType.INTEGER
-                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, UIType, EntryType.INTEGER )
+                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, VIType, EntryType.INTEGER )
             }
-            in FOLLOW_UI -> {
-                parse.add(35)
+            in FOLLOW_VI -> {
+                parse.add(29)
                 EntryType.VOID
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FOLLOW_UI + TokenCode.PLUS)
@@ -404,47 +359,91 @@ class SyntaxAnalyzer {
 
     private fun V(): EntryType {
         return when (nextToken.code) {
+            TokenCode.IDENTIFIER -> {
+                parse.add(30)
+                val idToken = compare(TokenCode.IDENTIFIER){
+                    (nextToken as IdentifierToken)
+                }
+                val entryType = symbolsTable.getEntryType(idToken.tablePosition) ?: throw UnexpectedIdentifierException(lexicalAnalyzer.fileLine, idToken.name)
+                W(idToken.tablePosition, entryType)
+                entryType
+            }
             TokenCode.LEFT_PARENTHESIS -> {
-                parse.add(36)
+                parse.add(31)
                 compare(TokenCode.LEFT_PARENTHESIS)
                 val type = E()
                 compare(TokenCode.RIGHT_PARENTHESIS)
                 type
             }
             TokenCode.INTEGER -> {
-                parse.add(37)
+                parse.add(32)
                 compare(TokenCode.INTEGER)
                 EntryType.INTEGER
             }
             TokenCode.STRING -> {
-                parse.add(38)
+                parse.add(33)
                 compare(TokenCode.STRING)
                 EntryType.STRING
             }
-            in FIRST_S -> {
-                parse.add(39)
-                S()
-            }
             TokenCode.TRUE -> {
-                parse.add(40)
+                parse.add(34)
                 compare(TokenCode.TRUE)
                 EntryType.BOOLEAN
             }
             TokenCode.FALSE -> {
-                parse.add(40)
+                parse.add(34)
                 compare(TokenCode.FALSE)
                 EntryType.BOOLEAN
             }
-
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FIRST_S + TokenCode.LEFT_PARENTHESIS + TokenCode.INTEGER + TokenCode.STRING + TokenCode.TRUE + TokenCode.FALSE)
         }
     }
 
+    private fun W(tablePosition: Int, entryType: EntryType) {
+        when (nextToken.code) {
+            TokenCode.LEFT_PARENTHESIS -> {
+                parse.add(35)
+                if(entryType != EntryType.FUNCTION)
+                    throw UnexpectedTypeException(lexicalAnalyzer.fileLine, entryType, EntryType.FUNCTION)
+                val parameterList = symbolsTable.getEntryParameters(tablePosition)
+                compare(TokenCode.LEFT_PARENTHESIS)
+                L(parameterList)
+                compare(TokenCode.RIGHT_PARENTHESIS)
+            }
+            in FOLLOW_W ->{
+                parse.add(36)
+            }
+            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FIRST_S + TokenCode.LEFT_PARENTHESIS + TokenCode.INTEGER + TokenCode.STRING + TokenCode.TRUE + TokenCode.FALSE)
+        }
+    }
+
+    private fun T(): EntryType {
+        return when (nextToken.code) {
+            TokenCode.INTEGER_KEYWORD -> {
+                parse.add(37)
+                compare(TokenCode.INTEGER_KEYWORD)
+                EntryType.INTEGER
+            }
+            TokenCode.BOOLEAN_KEYWORD -> {
+                parse.add(38)
+                compare(TokenCode.BOOLEAN_KEYWORD)
+                EntryType.BOOLEAN
+            }
+            TokenCode.STRING_KEYWORD -> {
+                parse.add(39)
+                compare(TokenCode.STRING_KEYWORD)
+                EntryType.STRING
+            }
+            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, listOf(TokenCode.INTEGER_KEYWORD, TokenCode.BOOLEAN_KEYWORD,TokenCode.STRING_KEYWORD))
+        }
+    }
+
     private fun F() {
+        parse.add(40)
         if (!symbolsTable.isCurrentTableGlobal){
             throw UnexpectedFunctionDeclarationException(lexicalAnalyzer.fileLine)
         }
-        parse.add(41)
+
         compare(TokenCode.FUNCTION)
         val tablePosition = compare(TokenCode.IDENTIFIER){
             (nextToken as IdentifierToken).tablePosition
@@ -457,19 +456,19 @@ class SyntaxAnalyzer {
         A(tablePosition) // Adds parameters
         compare(TokenCode.RIGHT_PARENTHESIS)
         compare(TokenCode.LEFT_BRACKET)
-        D()
-        compare(TokenCode.RIGHT_BRACKET)
+        C()
         symbolsTable.destroyCurrentLocalTable()
+        compare(TokenCode.RIGHT_BRACKET)
     }
 
     private fun H(): EntryType {
         return when (nextToken.code) {
             in FIRST_T -> {
-                parse.add(42)
+                parse.add(41)
                 T()
             }
             in FOLLOW_H -> {
-                parse.add(43)
+                parse.add(42)
                 EntryType.VOID
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FIRST_T + FOLLOW_H)
@@ -479,131 +478,122 @@ class SyntaxAnalyzer {
     private fun A(parentTablePosition: Int) {
         when (nextToken.code) {
             in FIRST_T -> {
-                parse.add(44)
+                parse.add(43)
                 val entryType = T()
                 symbolsTable.addFunctionParameter(parentTablePosition, entryType)
                 val tablePosition = compare(TokenCode.IDENTIFIER){ (nextToken as IdentifierToken).tablePosition}
                 symbolsTable.addEntryType(tablePosition, entryType)
-                AI(parentTablePosition)
+                K(parentTablePosition)
             }
             in FOLLOW_A -> {
-                parse.add(45)
+                parse.add(44)
             }
             else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FIRST_T + FOLLOW_A)
         }
     }
 
-    private fun AI(parentTablePosition: Int) {
+    private fun K(parentTablePosition: Int) {
         when (nextToken.code) {
             TokenCode.COMMA -> {
-                parse.add(46)
+                parse.add(45)
                 compare(TokenCode.COMMA)
                 val entryType = T()
                 symbolsTable.addFunctionParameter(parentTablePosition, entryType)
                 val tablePosition = compare(TokenCode.IDENTIFIER){ (nextToken as IdentifierToken).tablePosition}
                 symbolsTable.addEntryType(tablePosition, entryType)
-                AI(parentTablePosition)
+                K(parentTablePosition)
             }
-            in FOLLOW_AI -> {
-                parse.add(47)
+            in FOLLOW_K -> {
+                parse.add(46)
             }
-            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FOLLOW_AI + TokenCode.COMMA )
-        }
-    }
-
-    private fun D() {
-        when (nextToken.code) {
-            in FIRST_B -> {
-                parse.add(48)
-                B()
-                D()
-            }
-            in FOLLOW_D -> {
-                parse.add(49)
-            }
-            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FIRST_B + FOLLOW_D)
+            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FOLLOW_K + TokenCode.COMMA )
         }
     }
 
     private fun C() {
-        parse.add(50)
-        B()
-        C()
+        when(nextToken.code){
+            in FIRST_B -> {
+                parse.add(47)
+                B()
+                C()
+            }
+            in FOLLOW_C -> {
+                parse.add(48)
+            }
+            else -> throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, FIRST_B + FOLLOW_C)
+        }
     }
 
     companion object {
         //FIRST
         val FIRST_B = listOf(
+            TokenCode.IF,
             TokenCode.LET,
             TokenCode.IDENTIFIER,
             TokenCode.WHILE,
-            TokenCode.IF,
             TokenCode.PRINT,
             TokenCode.INPUT,
             TokenCode.RETURN
         )
         val FIRST_F = listOf(TokenCode.FUNCTION)
-        val FIRST_S = listOf(TokenCode.IDENTIFIER,
-            TokenCode.PRINT,
-            TokenCode.INPUT,
-            TokenCode.RETURN)
-        val FIRST_R = listOf(
-            TokenCode.IDENTIFIER,
-            TokenCode.LEFT_BRACKET,
-            TokenCode.PRINT,
-            TokenCode.INPUT,
-            TokenCode.RETURN,
-            TokenCode.INTEGER,
-            TokenCode.STRING,
-            TokenCode.TRUE,
-            TokenCode.FALSE,
-        )
         val FIRST_T = listOf(
             TokenCode.INTEGER_KEYWORD,
             TokenCode.STRING_KEYWORD,
             TokenCode.BOOLEAN_KEYWORD
         )
-        val FIRST_G = listOf(
+        val FIRST_S = listOf(
             TokenCode.IDENTIFIER,
             TokenCode.PRINT,
             TokenCode.INPUT,
             TokenCode.RETURN
         )
-        val FIRST_SI = listOf(
-            TokenCode.PRINT,
-            TokenCode.INPUT,
-            TokenCode.RETURN
+        val FIRST_E = listOf(
+            TokenCode.LEFT_PARENTHESIS,
+            TokenCode.IDENTIFIER,
+            TokenCode.INTEGER,
+            TokenCode.STRING,
+            TokenCode.TRUE,
+            TokenCode.FALSE
         )
 
         //FOLLOW
         val FOLLOW_P = listOf(TokenCode.EOF)
-        val FOLLOW_D = listOf(TokenCode.RIGHT_BRACKET)
-        val FOLLOW_Z = listOf(TokenCode.SEMICOLON)
+        val FOLLOW_C = listOf(TokenCode.RIGHT_BRACKET)
         val FOLLOW_E = listOf(
             TokenCode.SEMICOLON,
             TokenCode.RIGHT_PARENTHESIS,
             TokenCode.COMMA)
-        val FOLLOW_EI = listOf(
-            TokenCode.SEMICOLON,
-            TokenCode.RIGHT_PARENTHESIS,
-            TokenCode.COMMA)
+
         val FOLLOW_A = listOf(TokenCode.RIGHT_PARENTHESIS)
-        val FOLLOW_AI = listOf(TokenCode.RIGHT_PARENTHESIS)
         val FOLLOW_Q = listOf(TokenCode.RIGHT_PARENTHESIS)
         val FOLLOW_H = listOf(TokenCode.LEFT_PARENTHESIS)
+        val FOLLOW_X = listOf(TokenCode.SEMICOLON)
         val FOLLOW_RI = listOf(
-            TokenCode.SEMICOLON,
             TokenCode.RIGHT_PARENTHESIS,
-            TokenCode.COMMA,
-            TokenCode.LOGICAL_AND
-        )
+            TokenCode.SEMICOLON,
+            TokenCode.COMMA)
         val FOLLOW_UI = listOf(
-            TokenCode.SEMICOLON,
             TokenCode.RIGHT_PARENTHESIS,
+            TokenCode.SEMICOLON,
+            TokenCode.COMMA,
+            TokenCode.LOGICAL_AND)
+        val FOLLOW_VI = listOf(
+            TokenCode.RIGHT_PARENTHESIS,
+            TokenCode.SEMICOLON,
             TokenCode.COMMA,
             TokenCode.LOGICAL_AND,
             TokenCode.COMPARISON_EQUAL
         )
+        val FOLLOW_W = listOf(
+            TokenCode.RIGHT_PARENTHESIS,
+            TokenCode.SEMICOLON,
+            TokenCode.COMMA,
+            TokenCode.LOGICAL_AND,
+            TokenCode.COMPARISON_EQUAL,
+            TokenCode.PLUS,
+            TokenCode.MINUS
+        )
+        val FOLLOW_K = listOf(TokenCode.RIGHT_PARENTHESIS)
     }
 }
 

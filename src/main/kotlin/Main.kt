@@ -9,13 +9,13 @@ fun main() {
     try {
         syntaxAnalyzer.analyze()
     } catch (e: LexicalException){
-        writeError("LexicalException."+ e.message)
+        writeError("LexicalException. "+ e.message)
         return
     } catch(e: SyntaxException){
-        writeError("SyntaxException."+ e.message)
+        writeError("SyntaxException. "+ e.message)
         return
     } catch (e: SemanticException){
-        writeError("SemanticException."+ e.message)
+        writeError("SemanticException. "+ e.message)
     }
 
     syntaxAnalyzer.saveParse()

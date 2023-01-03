@@ -6,13 +6,12 @@ import TokenCode
 
 val del: List<Char> = listOf(' ', '\n', '\t')
 val singleCharSymbols: List<Char> = listOf(';', '(', ')', '{', '}', ',', '$')
-val operators: List<Char> = listOf('+', '-', '*',  '=', '>', '<', '!', '%')
+val operators: List<Char> = listOf('+', '-', '*',  '=', '>', '<', '!')
 val keywords: List<String> = listOf(
     "while",
     "if",
     "print",
     "input",
-    "null",
     "function",
     "let",
     "true",
@@ -29,7 +28,6 @@ val codesMap: Map<String, TokenCode> = mapOf(
     "print" to TokenCode.PRINT,
     "if" to TokenCode.IF,
     "input" to TokenCode.INPUT,
-    "null" to TokenCode.NULL,
     "function" to TokenCode.FUNCTION,
     "let" to TokenCode.LET,
     "true" to TokenCode.TRUE,
@@ -49,23 +47,8 @@ val codesMap: Map<String, TokenCode> = mapOf(
     //Operators
     "+" to TokenCode.PLUS,
     "-" to TokenCode.MINUS,
-    "*" to TokenCode.TIMES,
-    "/" to TokenCode.DIVISION,
-    "%" to TokenCode.MODULUS,
-    "+=" to TokenCode.PLUS_EQUAL,
-    "-=" to TokenCode.MINUS_EQUAL,
-    "*=" to TokenCode.TIMES_EQUAL,
-    "/=" to TokenCode.DIVIDE_EQUAL,
-    "%=" to TokenCode.MODULUS_EQUAL,
-    ">=" to TokenCode.GREATER_THAN_OR_EQUAL,
-    "<=" to TokenCode.LESS_THAN_OR_EQUAL,
     "==" to TokenCode.COMPARISON_EQUAL,
-    ">" to TokenCode.GREATER_THAN,
-    "<" to TokenCode.LESS_THAN,
-    "!" to TokenCode.NOT,
-    "!=" to TokenCode.NOT_EQUAL,
     "&&" to TokenCode.LOGICAL_AND,
-    "||" to TokenCode.LOGICAL_OR,
     "|=" to TokenCode.OR_EQUAL,
     //EOF
     "$" to TokenCode.EOF
