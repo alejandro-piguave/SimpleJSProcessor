@@ -170,10 +170,10 @@ class SyntaxAnalyzer {
                 compare(TokenCode.SEMICOLON)
             }
             TokenCode.RETURN -> {
+                parse.add(11)
                 if(symbolsTable.isCurrentTableGlobal){
                     throw UnexpectedReturnUseException(lexicalAnalyzer.fileLine)
                 }
-                parse.add(11)
                 compare(TokenCode.RETURN)
                 X()
                 compare(TokenCode.SEMICOLON)
@@ -445,15 +445,16 @@ class SyntaxAnalyzer {
         }
 
         compare(TokenCode.FUNCTION)
-        val tablePosition = compare(TokenCode.IDENTIFIER){
-            (nextToken as IdentifierToken).tablePosition
+        val idToken = compare(TokenCode.IDENTIFIER){
+            (nextToken as IdentifierToken)
         }
-        symbolsTable.addEntryType(tablePosition, EntryType.FUNCTION) // Makes entry of type 'function'
+        symbolsTable.addEntryType(idToken.tablePosition, EntryType.FUNCTION) // Makes entry of type 'function'
+        symbolsTable.addFunctionTag(idToken.tablePosition, idToken.name)
         val returnType = H()
-        symbolsTable.addReturnType(tablePosition, returnType) // Sets entry's 'return type' field
+        symbolsTable.addReturnType(idToken.tablePosition, returnType) // Sets entry's 'return type' field
         compare(TokenCode.LEFT_PARENTHESIS)
         symbolsTable.createLocalTable()
-        A(tablePosition) // Adds parameters
+        A(idToken.tablePosition) // Adds parameters
         compare(TokenCode.RIGHT_PARENTHESIS)
         compare(TokenCode.LEFT_BRACKET)
         C()

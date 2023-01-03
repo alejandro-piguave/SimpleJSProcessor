@@ -1,11 +1,11 @@
-NoTerminales = { P B F E S T C I X L Q R RI U UI V VI W H A K}
+NoTerminales = { P B F E S T C I X L Q R RI U UI V VI W H A K }
 Terminales = { int boolean string let while ( ) { } print input return ; = |= , && == + - function id entero cadena booleano if }
 Axioma = P
 
 Producciones = {
 P -> B P
 P -> F P
-P -> epsilon
+P -> lambda
 
 B -> if ( E ) S ;
 B -> let id T ;
@@ -24,26 +24,26 @@ I -> ( L )
 L -> E Q
 
 Q -> , E Q
-Q -> epsilon
+Q -> lambda
 
 X -> E
-X -> epsilon
+X -> lambda
 
 E -> R RI
 
 RI -> && R RI
-RI -> epsilon
+RI -> lambda
 
 R -> U UI
 
 UI -> == U UI
-UI -> epsilon
+UI -> lambda
 
 U -> V VI
 
 VI -> + V VI
 VI -> - V VI
-VI -> epsilon
+VI -> lambda
 
 V -> id W
 V -> ( E )
@@ -52,7 +52,7 @@ V -> cadena
 V -> booleano
 
 W -> ( L )
-W -> epsilon
+W -> lambda
 
 T -> int
 T -> boolean
@@ -61,14 +61,14 @@ T -> string
 F -> function id H ( A ) { C }
 
 H -> T
-H -> epsilon
+H -> lambda
 
 A -> T id K
-A -> epsilon
+A -> lambda
 
 K -> , T id K
-K -> epsilon
+K -> lambda
 
 C -> B C
-C -> epsilon
+C -> lambda
 }

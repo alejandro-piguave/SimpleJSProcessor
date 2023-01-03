@@ -20,6 +20,19 @@ class SymbolsTable {
 
     fun addEntryType(position: Int, type: EntryType){
         currentLocalTable[position].entryType = type
+        if(type != EntryType.FUNCTION){
+            val varCount = currentLocalTable.count { it.entryType != EntryType.FUNCTION }
+            addDisplacement(position, (varCount-1)*2)
+        }
+    }
+
+    fun addFunctionTag(position: Int, name: String){
+        val functionCount = currentLocalTable.count { it.entryType == EntryType.FUNCTION }
+        currentLocalTable[position].functionTag = "Et${functionCount+1}_${name}"
+    }
+
+    private fun addDisplacement(position: Int, displacement: Int){
+        currentLocalTable[position].displacement = displacement
     }
 
     fun addReturnType(position: Int, type: EntryType){
@@ -66,9 +79,12 @@ class SymbolsTable {
         if (tableEntry.entryType == EntryType.FUNCTION) {
             append("+ numParam: ${tableEntry.parameterCount}\n")
             append("+ TipoRetorno: '${tableEntry.returnType?.nombre}'\n")
+            append("+ EtiqFuncion: '${tableEntry.functionTag}'\n")
             tableEntry.parameterTypes.forEachIndexed {i , e ->
-                append("\t+ TipoParam$i: '${e.nombre}'\n")
+                append("\t+ TipoParam${i+1}: '${e.nombre}'\n")
             }
+        } else {
+            append("+ Despl: ${tableEntry.displacement}\n")
         }
     }
 
@@ -86,7 +102,10 @@ class TableEntry(val key: String,
                  var entryType: EntryType? = null,
                  var parameterCount: Int = 0,
                  val parameterTypes: MutableList<EntryType> = mutableListOf(),
-                 var returnType: EntryType? = null)
+                 var returnType: EntryType? = null,
+                 var functionTag: String = "",
+                 var displacement: Int = 0
+)
 
 enum class EntryType(val nombre: String){
     STRING("cadena"),
