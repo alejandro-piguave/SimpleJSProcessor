@@ -3,44 +3,64 @@ import java.io.File
 class SymbolsTable {
     private val globalTable: MutableList<TableEntry> = mutableListOf()
     private val localTableHistory: MutableList<List<TableEntry>> = mutableListOf()
-    private var currentLocalTable: MutableList<TableEntry> = globalTable
+    private val currentLocalTable: MutableList<TableEntry> = mutableListOf()
 
-    val isCurrentTableGlobal: Boolean
-        get() = currentLocalTable === globalTable
+    var isCurrentTableGlobal = true
+
+    private val currentWorkingTable: MutableList<TableEntry>
+        get() = if(isCurrentTableGlobal) globalTable else currentLocalTable
 
     fun getIdToken(name: String): IdentifierToken{
-        currentLocalTable.forEachIndexed { index, tableEntry ->
+        currentWorkingTable.forEachIndexed { index, tableEntry ->
             if(tableEntry.key == name){
-                return IdentifierToken(name, index)
+                println("Retrieving token '$name' from the current table...")
+                return IdentifierToken(name, index, isCurrentTableGlobal)
             }
         }
-        currentLocalTable.add(TableEntry(name))
-        return IdentifierToken(name, currentLocalTable.lastIndex)
+
+        //If it hasn't found it in the current table and the current table is not global,
+        //then search in the global table too
+        if(!isCurrentTableGlobal){
+            globalTable.forEachIndexed { index, tableEntry ->
+                if(tableEntry.key == name){
+                    println("Retrieving token '$name' from the global table...")
+                    return IdentifierToken(name, index, true)
+                }
+            }
+
+        }
+
+        //If none of the searches are successful, add the token in the current table
+        println("Adding token '$name' to the current table...")
+        currentWorkingTable.add(TableEntry(name))
+        return IdentifierToken(name, currentWorkingTable.lastIndex, isCurrentTableGlobal)
     }
 
     fun addEntryType(position: Int, type: EntryType){
-        currentLocalTable[position].entryType = type
+        currentWorkingTable[position].entryType = type
         if(type != EntryType.FUNCTION){
-            val varCount = currentLocalTable.count { it.entryType != EntryType.FUNCTION }
+            val varCount = currentWorkingTable.count { it.entryType != EntryType.FUNCTION }
             addDisplacement(position, (varCount-1)*2)
         }
     }
 
     fun addFunctionTag(position: Int, name: String){
-        val functionCount = currentLocalTable.count { it.entryType == EntryType.FUNCTION }
-        currentLocalTable[position].functionTag = "Et${functionCount+1}_${name}"
+        val functionCount = currentWorkingTable.count { it.entryType == EntryType.FUNCTION }
+        currentWorkingTable[position].functionTag = "Et${functionCount+1}_${name}"
     }
 
     private fun addDisplacement(position: Int, displacement: Int){
-        currentLocalTable[position].displacement = displacement
+        currentWorkingTable[position].displacement = displacement
     }
 
     fun addReturnType(position: Int, type: EntryType){
-        currentLocalTable[position].returnType = type
+        globalTable[position].returnType = type
     }
 
-    fun getEntryType(position: Int): EntryType?{
-        return currentLocalTable[position].entryType
+    fun getEntryType(identifierToken: IdentifierToken): EntryType?{
+        return if(identifierToken.isInGlobalTable){
+            globalTable[identifierToken.tablePosition].entryType
+        } else currentWorkingTable[identifierToken.tablePosition].entryType
     }
 
     //Only performs additions in the global table
@@ -49,8 +69,8 @@ class SymbolsTable {
         globalTable[position].parameterCount = globalTable[position].parameterTypes.size
     }
 
-    fun getEntryParameters(position: Int): List<EntryType> {
-        return currentLocalTable[position].parameterTypes
+    fun getFunctionParameters(position: Int): List<EntryType> {
+        return globalTable[position].parameterTypes //Functions can only be declared at a global level
     }
 
     fun save(){
@@ -89,12 +109,13 @@ class SymbolsTable {
     }
 
     fun createLocalTable(){
-        currentLocalTable = mutableListOf()
+        isCurrentTableGlobal = false
     }
 
     fun destroyCurrentLocalTable(){
-        localTableHistory.add(currentLocalTable)
-        currentLocalTable = globalTable
+        localTableHistory.add(currentLocalTable.toList())
+        currentLocalTable.clear()
+        isCurrentTableGlobal = true
     }
 
 }

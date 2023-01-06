@@ -22,6 +22,7 @@ I -> |= E
 I -> ( L )
 
 L -> E Q
+L -> lambda
 
 Q -> , E Q
 Q -> lambda

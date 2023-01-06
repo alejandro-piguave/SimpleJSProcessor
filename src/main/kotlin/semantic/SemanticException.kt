@@ -21,3 +21,7 @@ class UnexpectedFunctionDeclarationException private constructor(message: String
 class UnexpectedReturnUseException private constructor(message: String): SemanticException(message){
     constructor(line: Int): this("Unexpected 'return' use in line $line: the 'return' is only allowed inside a function declaration.")
 }
+
+class TooManyArgumentsException( functionName: String): SemanticException("Too many arguments for function '$functionName'")
+
+class MissingParametersException(functionName: String): SemanticException("Parameters missing for function '$functionName'")

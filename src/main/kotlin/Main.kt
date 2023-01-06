@@ -16,6 +16,7 @@ fun main() {
         return
     } catch (e: SemanticException){
         writeError("SemanticException. "+ e.message)
+        return
     }
 
     syntaxAnalyzer.saveParse()
