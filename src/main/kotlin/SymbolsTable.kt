@@ -13,7 +13,7 @@ class SymbolsTable {
     fun getIdToken(name: String): IdentifierToken{
         currentWorkingTable.forEachIndexed { index, tableEntry ->
             if(tableEntry.key == name){
-                println("Retrieving token '$name' from the current table...")
+                //println("Retrieving token '$name' from the current table...")
                 return IdentifierToken(name, index, isCurrentTableGlobal)
             }
         }
@@ -23,15 +23,15 @@ class SymbolsTable {
         if(!isCurrentTableGlobal){
             globalTable.forEachIndexed { index, tableEntry ->
                 if(tableEntry.key == name){
-                    println("Retrieving token '$name' from the global table...")
+                    //println("Retrieving token '$name' from the global table...")
                     return IdentifierToken(name, index, true)
                 }
             }
 
         }
 
-        //If none of the searches are successful, add the token in the current table
-        println("Adding token '$name' to the current table...")
+        //If none of the searches are successful, add the token in the current table and return it
+        //println("Adding token '$name' to the current table...")
         currentWorkingTable.add(TableEntry(name))
         return IdentifierToken(name, currentWorkingTable.lastIndex, isCurrentTableGlobal)
     }
@@ -46,7 +46,7 @@ class SymbolsTable {
 
     fun addFunctionTag(position: Int, name: String){
         val functionCount = currentWorkingTable.count { it.entryType == EntryType.FUNCTION }
-        currentWorkingTable[position].functionTag = "Et${functionCount+1}_${name}"
+        currentWorkingTable[position].functionTag = "Et${functionCount}_${name}"
     }
 
     private fun addDisplacement(position: Int, displacement: Int){

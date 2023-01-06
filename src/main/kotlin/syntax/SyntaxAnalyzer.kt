@@ -48,7 +48,7 @@ class SyntaxAnalyzer {
 
     private fun generateNextToken() {
         nextToken = lexicalAnalyzer.getNextToken()
-        println("Current token = $nextToken")
+        //println("Current token = $nextToken")
     }
 
     private fun compare(tokenCode: TokenCode) {
