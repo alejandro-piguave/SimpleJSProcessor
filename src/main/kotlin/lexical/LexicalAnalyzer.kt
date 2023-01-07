@@ -2,6 +2,7 @@ package lexical
 
 import GenericToken
 import IntegerToken
+import SOURCE_PATHNAME
 import StringToken
 import SymbolsTable
 import Token
@@ -19,12 +20,8 @@ class LexicalAnalyzer(private val tableManager: SymbolsTable,
     private var currentChar: Int = 0
     private val text: String
 
-    companion object{
-        const val sourcePathname = "src/main/resources/source.txt"
-    }
-
     init {
-        val file = File(sourcePathname)
+        val file = File(SOURCE_PATHNAME)
         text = buildString {
             file.forEachLine { line ->
                 append(line+"\n")

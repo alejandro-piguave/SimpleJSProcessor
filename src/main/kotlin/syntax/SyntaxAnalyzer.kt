@@ -2,8 +2,10 @@ package syntax
 
 import EntryType
 import IdentifierToken
+import PARSE_PATHNAME
 import lexical.LexicalAnalyzer
 import SymbolsTable
+import TOKENS_PATHNAME
 import Token
 import TokenCode
 import semantic.*
@@ -24,7 +26,7 @@ class SyntaxAnalyzer {
             }
         }
 
-        File("src/main/resources/parse.txt").writeText(parseContent)
+        File(PARSE_PATHNAME).writeText(parseContent)
     }
 
     fun saveTokens(){
@@ -33,7 +35,7 @@ class SyntaxAnalyzer {
                 append("$token\n")
             }
         }
-        File("src/main/resources/tokens.txt").writeText(tokensFileContent)
+        File(TOKENS_PATHNAME).writeText(tokensFileContent)
     }
 
     fun saveSymbols(){
@@ -172,7 +174,7 @@ class SyntaxAnalyzer {
                     throw UnexpectedReturnUseException(lexicalAnalyzer.fileLine)
                 }
                 compare(TokenCode.RETURN)
-                val XType = X()
+                X()
 
                 compare(TokenCode.SEMICOLON)
             }
@@ -380,8 +382,11 @@ class SyntaxAnalyzer {
                     (nextToken as IdentifierToken)
                 }
                 val entryType = symbolsTable.getEntryType(idToken) ?: throw UnexpectedIdentifierException(lexicalAnalyzer.fileLine, idToken.name)
+                val returnType = if(entryType == EntryType.FUNCTION){
+                    symbolsTable.getReturnType(idToken.tablePosition)!! //If it's a function then it must have a return type.
+                } else entryType
                 W(idToken, entryType)
-                entryType
+                returnType
             }
             TokenCode.LEFT_PARENTHESIS -> {
                 parse.add(32)

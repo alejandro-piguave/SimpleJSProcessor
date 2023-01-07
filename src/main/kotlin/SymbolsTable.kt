@@ -73,6 +73,10 @@ class SymbolsTable {
         return globalTable[position].parameterTypes //Functions can only be declared at a global level
     }
 
+    fun getReturnType(position: Int): EntryType? {
+        return globalTable[position].returnType //Functions can only be declared at a global level
+    }
+
     fun save(){
         val text = buildString {
             append("#0:\n")
@@ -90,7 +94,7 @@ class SymbolsTable {
                 append("\n")
             }
         }
-        File("src/main/resources/symbols_table.txt").writeText(text)
+        File(SYMBOLS_PATHNAME).writeText(text)
     }
 
     private fun StringBuilder.appendEntry(tableEntry: TableEntry){

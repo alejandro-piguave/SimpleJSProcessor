@@ -26,7 +26,7 @@ fun main() {
 
 fun writeError(message: String?){
     message?.let {
-        File("src/main/resources/errors.txt").writeText(it)
+        File(ERRORS_PATHNAME).writeText(it)
     }
 }
 
