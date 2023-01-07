@@ -247,7 +247,6 @@ class SyntaxAnalyzer {
                 if(index >= parameterList.size && EType != EntryType.VOID ){
                     throw TooManyArgumentsException(identifierToken.name)
                 } else if(parameterList[index] != EType){
-
                     throw UnexpectedTypeException(lexicalAnalyzer.fileLine, EType, parameterList[index])
                 }
                 Q(identifierToken, parameterList, index + 1)
@@ -322,7 +321,8 @@ class SyntaxAnalyzer {
                 val UType = U()
                 val UIType = UI()
 
-                if(UType == EntryType.BOOLEAN && (UIType == EntryType.BOOLEAN || UIType == EntryType.VOID)){
+                if((UType == EntryType.BOOLEAN || UType == EntryType.STRING || UType == EntryType.INTEGER) &&
+                        UType == UIType){
                     EntryType.BOOLEAN
                 } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, UIType, EntryType.BOOLEAN )
             }
