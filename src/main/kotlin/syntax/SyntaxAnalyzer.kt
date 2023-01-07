@@ -50,7 +50,8 @@ class SyntaxAnalyzer {
 
     private fun generateNextToken() {
         nextToken = lexicalAnalyzer.getNextToken()
-        //println("Current token = $nextToken")
+        //Uncomment for debugging purposes
+        //println("Current token = ${nextToken.code.name}")
     }
 
     private fun compare(tokenCode: TokenCode) {
@@ -102,7 +103,6 @@ class SyntaxAnalyzer {
                 }
                 compare(TokenCode.RIGHT_PARENTHESIS)
                 S()
-                compare(TokenCode.SEMICOLON)
             }
             TokenCode.LET -> {
                 parse.add(5)
@@ -277,21 +277,23 @@ class SyntaxAnalyzer {
     private fun E(): EntryType {
         parse.add(21)
         val RType = R()
-        val RIType = RI()
-        if(RType == RIType || RIType == EntryType.VOID){
-            return RType
-        } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, RIType, RType)
+        val RIType = RI(RType)
+        return if (RIType == EntryType.VOID) {
+            RType
+        } else {
+            RIType
+        }
     }
 
-    private fun RI(): EntryType {
+    private fun RI(previousType: EntryType): EntryType {
         return when (nextToken.code) {
             TokenCode.LOGICAL_AND -> {
                 parse.add(22)
                 compare(TokenCode.LOGICAL_AND)
                 val RType = R()
-                val RIType = RI()
+                val RIType = RI(RType)
 
-                if(RType == EntryType.BOOLEAN && (RIType == EntryType.BOOLEAN || RIType == EntryType.VOID)){
+                if(previousType == EntryType.BOOLEAN && RIType == EntryType.BOOLEAN){
                     EntryType.BOOLEAN
                 } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, RIType, EntryType.BOOLEAN )
             }
@@ -306,23 +308,23 @@ class SyntaxAnalyzer {
     private fun R(): EntryType {
         parse.add(24)
         val UType = U()
-        val UIType = UI()
+        val UIType = UI(UType)
 
-        if(UType == UIType || UIType == EntryType.VOID){
-            return UType
-        } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, UIType, UType)
+        return if(UIType == EntryType.VOID){
+            UType
+        } else UIType
     }
 
-    private fun UI(): EntryType {
+    private fun UI(previousType: EntryType): EntryType {
         return when (nextToken.code) {
             TokenCode.COMPARISON_EQUAL -> {
                 parse.add(25)
                 compare(TokenCode.COMPARISON_EQUAL)
                 val UType = U()
-                val UIType = UI()
+                val UIType = UI(UType)
 
-                if((UType == EntryType.BOOLEAN || UType == EntryType.STRING || UType == EntryType.INTEGER) &&
-                        UType == UIType){
+                if((previousType == EntryType.BOOLEAN || previousType == EntryType.STRING || previousType == EntryType.INTEGER) &&
+                    (previousType == UType)){
                     EntryType.BOOLEAN
                 } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, UIType, EntryType.BOOLEAN )
             }
@@ -337,22 +339,22 @@ class SyntaxAnalyzer {
     private fun U(): EntryType {
         parse.add(27)
         val VType = V()
-        val VIType = VI()
+        val VIType = VI(VType)
 
-        if(VType == VIType || VIType == EntryType.VOID){
-            return VType
-        } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, VIType, VType)
+        return if(VIType == EntryType.VOID){
+            VType
+        } else VIType
     }
 
-    private fun VI(): EntryType{
+    private fun VI(previousType: EntryType): EntryType{
         return when (nextToken.code) {
             TokenCode.PLUS -> {
                 parse.add(28)
                 compare(TokenCode.PLUS)
                 val VType = V()
-                val VIType = VI()
+                val VIType = VI(VType)
 
-                if(VType == EntryType.INTEGER && (VIType == EntryType.INTEGER || VIType == EntryType.VOID)){
+                if(previousType == EntryType.INTEGER && VType == EntryType.INTEGER){
                     EntryType.INTEGER
                 } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, VIType, EntryType.INTEGER )
             }
@@ -360,9 +362,9 @@ class SyntaxAnalyzer {
                 parse.add(29)
                 compare(TokenCode.MINUS)
                 val VType = V()
-                val VIType = VI()
+                val VIType = VI(VType)
 
-                if(VType == EntryType.INTEGER && (VIType == EntryType.INTEGER || VIType == EntryType.VOID)){
+                if(previousType == EntryType.INTEGER && VType == EntryType.INTEGER){
                     EntryType.INTEGER
                 } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, VIType, EntryType.INTEGER )
             }

@@ -7,7 +7,7 @@ P -> B P
 P -> F P
 P -> lambda
 
-B -> if ( E ) S ;
+B -> if ( E ) S
 B -> let id T ;
 B -> S
 B -> while ( E ) { C }

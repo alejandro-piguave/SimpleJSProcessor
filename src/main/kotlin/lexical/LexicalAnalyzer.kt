@@ -39,6 +39,9 @@ class LexicalAnalyzer(private val tableManager: SymbolsTable,
     fun getNextToken(): Token {
         while(currentChar < text.length){
             val char = text[currentChar]
+            if(char == '\n') {
+                fileLine++
+            }
             try {
                 val result = stateMachine.executeTransition(char)
                 if(result is LexicalState.FinalState){
@@ -55,9 +58,7 @@ class LexicalAnalyzer(private val tableManager: SymbolsTable,
                 throw StateMachineException(fileLine, e)
             }
 
-            if( currentChar < text.length && text[currentChar] == '\n') {
-                fileLine++
-            }
+
         }
         throw NoNextTokenException
     }
