@@ -61,7 +61,7 @@ class SyntaxAnalyzer {
         else throw UnexpectedTokenException(lexicalAnalyzer.fileLine, nextToken.code, tokenCode)
     }
 
-    private fun <T> compare(tokenCode: TokenCode, predicate: () -> T): T {
+    private inline fun <T> compare(tokenCode: TokenCode, predicate: () -> T): T {
         if (nextToken.code == tokenCode){
             val result = predicate()
             generateNextToken()
@@ -291,11 +291,11 @@ class SyntaxAnalyzer {
                 parse.add(22)
                 compare(TokenCode.LOGICAL_AND)
                 val RType = R()
-                val RIType = RI(RType)
+                RI(RType)
 
-                if(previousType == EntryType.BOOLEAN && RIType == EntryType.BOOLEAN){
+                if(previousType == EntryType.BOOLEAN && RType == EntryType.BOOLEAN){
                     EntryType.BOOLEAN
-                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, RIType, EntryType.BOOLEAN )
+                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, RType, EntryType.BOOLEAN )
             }
             in FOLLOW_RI -> {
                 parse.add(23)
@@ -321,12 +321,12 @@ class SyntaxAnalyzer {
                 parse.add(25)
                 compare(TokenCode.COMPARISON_EQUAL)
                 val UType = U()
-                val UIType = UI(UType)
+                UI(UType)
 
                 if((previousType == EntryType.BOOLEAN || previousType == EntryType.STRING || previousType == EntryType.INTEGER) &&
                     (previousType == UType)){
                     EntryType.BOOLEAN
-                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, UIType, EntryType.BOOLEAN )
+                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, UType, EntryType.BOOLEAN )
             }
             in FOLLOW_UI -> {
                 parse.add(26)
@@ -352,21 +352,21 @@ class SyntaxAnalyzer {
                 parse.add(28)
                 compare(TokenCode.PLUS)
                 val VType = V()
-                val VIType = VI(VType)
+                VI(VType)
 
                 if(previousType == EntryType.INTEGER && VType == EntryType.INTEGER){
                     EntryType.INTEGER
-                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, VIType, EntryType.INTEGER )
+                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, VType, EntryType.INTEGER )
             }
             TokenCode.MINUS -> {
                 parse.add(29)
                 compare(TokenCode.MINUS)
                 val VType = V()
-                val VIType = VI(VType)
+                VI(VType)
 
                 if(previousType == EntryType.INTEGER && VType == EntryType.INTEGER){
                     EntryType.INTEGER
-                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, VIType, EntryType.INTEGER )
+                } else throw UnexpectedTypeException(lexicalAnalyzer.fileLine, VType, EntryType.INTEGER )
             }
             in FOLLOW_VI -> {
                 parse.add(30)
