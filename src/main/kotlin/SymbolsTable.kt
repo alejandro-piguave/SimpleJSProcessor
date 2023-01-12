@@ -1,3 +1,4 @@
+import semantic.UnexpectedIdentifierException
 import java.io.File
 
 class SymbolsTable {
@@ -6,34 +7,38 @@ class SymbolsTable {
     private val currentLocalTable: MutableList<TableEntry> = mutableListOf()
 
     var isCurrentTableGlobal = true
+    var isDeclaringZone = false
 
     private val currentWorkingTable: MutableList<TableEntry>
         get() = if(isCurrentTableGlobal) globalTable else currentLocalTable
 
-    fun getIdToken(name: String): IdentifierToken{
-        currentWorkingTable.forEachIndexed { index, tableEntry ->
-            if(tableEntry.key == name){
-                //println("Retrieving token '$name' from the current table...")
-                return IdentifierToken(name, index, isCurrentTableGlobal)
-            }
-        }
-
-        //If it hasn't found it in the current table and the current table is not global,
-        //then search in the global table too
-        if(!isCurrentTableGlobal){
-            globalTable.forEachIndexed { index, tableEntry ->
+    fun getIdToken(line: Int, name: String): IdentifierToken{
+        if(isDeclaringZone){
+            //If none of the searches are successful, add the token in the current table and return it
+            //println("Adding token '$name' to the current table...")
+            currentWorkingTable.add(TableEntry(name))
+            return IdentifierToken(name, currentWorkingTable.lastIndex, isCurrentTableGlobal)
+        } else {
+            currentWorkingTable.forEachIndexed { index, tableEntry ->
                 if(tableEntry.key == name){
-                    //println("Retrieving token '$name' from the global table...")
-                    return IdentifierToken(name, index, true)
+                    //println("Retrieving token '$name' from the current table...")
+                    return IdentifierToken(name, index, isCurrentTableGlobal)
                 }
             }
 
-        }
+            //If it hasn't found it in the current table and the current table is not global,
+            //then search in the global table too
+            if(!isCurrentTableGlobal){
+                globalTable.forEachIndexed { index, tableEntry ->
+                    if(tableEntry.key == name){
+                        //println("Retrieving token '$name' from the global table...")
+                        return IdentifierToken(name, index, true)
+                    }
+                }
 
-        //If none of the searches are successful, add the token in the current table and return it
-        //println("Adding token '$name' to the current table...")
-        currentWorkingTable.add(TableEntry(name))
-        return IdentifierToken(name, currentWorkingTable.lastIndex, isCurrentTableGlobal)
+            }
+            throw UnexpectedIdentifierException(line,name)
+        }
     }
 
     fun addEntryType(position: Int, type: EntryType){

@@ -6,6 +6,7 @@ import java.io.File
 
 fun main() {
     val syntaxAnalyzer = SyntaxAnalyzer()
+
     try {
         syntaxAnalyzer.analyze()
     } catch (e: LexicalException){

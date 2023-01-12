@@ -11,11 +11,11 @@ import TokenCode
 import semantic.*
 import java.io.File
 
-class SyntaxAnalyzer {
+class SyntaxAnalyzer(sourcePath: String? = null) {
     private lateinit var nextToken: Token
     private val symbolsTable = SymbolsTable()
     private val tokens: MutableList<Token> = mutableListOf()
-    private val lexicalAnalyzer = LexicalAnalyzer(symbolsTable, tokens)
+    private val lexicalAnalyzer = LexicalAnalyzer(symbolsTable, tokens, sourcePath)
     private val parse: MutableList<Int> = mutableListOf()
 
     fun saveParse(){
@@ -51,7 +51,7 @@ class SyntaxAnalyzer {
     private fun generateNextToken() {
         nextToken = lexicalAnalyzer.getNextToken()
         //Uncomment for debugging purposes
-        //println("Current token = ${nextToken.code.name}")
+        println("Current token = ${nextToken.code.name}")
     }
 
     private fun compare(tokenCode: TokenCode) {
@@ -105,6 +105,7 @@ class SyntaxAnalyzer {
                 S()
             }
             TokenCode.LET -> {
+                symbolsTable.isDeclaringZone = true
                 parse.add(5)
                 compare(TokenCode.LET)
                 val tablePosition = compare(TokenCode.IDENTIFIER){
@@ -112,7 +113,9 @@ class SyntaxAnalyzer {
                 }
                 val type = T()
                 symbolsTable.addEntryType(tablePosition,type)
+                symbolsTable.isDeclaringZone = false
                 compare(TokenCode.SEMICOLON)
+
             }
             in FIRST_S -> {
                 parse.add(6)
@@ -460,6 +463,7 @@ class SyntaxAnalyzer {
     }
 
     private fun F() {
+        symbolsTable.isDeclaringZone = true
         parse.add(41)
         if (!symbolsTable.isCurrentTableGlobal){
             throw UnexpectedFunctionDeclarationException(lexicalAnalyzer.fileLine)
@@ -477,6 +481,7 @@ class SyntaxAnalyzer {
         symbolsTable.createLocalTable()
         A(idToken.tablePosition) // Adds parameters
         compare(TokenCode.RIGHT_PARENTHESIS)
+        symbolsTable.isDeclaringZone = false
         compare(TokenCode.LEFT_BRACKET)
         C()
         compare(TokenCode.RIGHT_BRACKET)

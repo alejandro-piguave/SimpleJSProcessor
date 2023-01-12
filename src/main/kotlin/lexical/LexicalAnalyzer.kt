@@ -12,7 +12,8 @@ import lexical.statemachine.LexicalStateMachineException
 import java.io.File
 
 class LexicalAnalyzer(private val tableManager: SymbolsTable,
-                      private val tokens: MutableList<Token>
+                      private val tokens: MutableList<Token>,
+                      sourcePath: String? = null
 ) {
     private val stateMachine = LexicalStateMachine()
     var fileLine = 1
@@ -21,7 +22,7 @@ class LexicalAnalyzer(private val tableManager: SymbolsTable,
     private val text: String
 
     init {
-        val file = File(SOURCE_PATHNAME)
+        val file = File(sourcePath ?: SOURCE_PATHNAME)
         text = buildString {
             file.forEachLine { line ->
                 append(line+"\n")
@@ -67,7 +68,7 @@ class LexicalAnalyzer(private val tableManager: SymbolsTable,
     private fun convertToToken(result: LexicalState.FinalState): Token{
         return when(result){
             is LexicalState.GenericFinalState -> GenericToken(result.code)
-            is LexicalState.IdFinalState -> tableManager.getIdToken(result.name)
+            is LexicalState.IdFinalState -> tableManager.getIdToken(fileLine, result.name)
             is LexicalState.IntFinalState -> IntegerToken(result.value)
             is LexicalState.StringFinalState -> StringToken(result.value)
         }
